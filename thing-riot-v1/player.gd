@@ -1,5 +1,11 @@
 extends CharacterBody2D
 
+func _ready():
+        # The player only collides with the map so enemies don't physically
+        # block or push them. Enemy contact is handled via Area2D.
+        collision_layer = 1
+        collision_mask = 1
+
 # Movement speed in pixels/sec
 var speed := 200
 

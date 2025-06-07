@@ -6,8 +6,15 @@ extends CharacterBody2D
 var player = null
 
 func _ready():
-	# Find player node once at start (adjust path if needed)
-	player = get_node("/root/Main/Player")
+        # Find player node once at start (adjust path if needed)
+        player = get_node("/root/Main/Player")
+        # Separate the enemy from the player body so they don't block each
+        # other. The enemy only collides with the map (layer 1) and uses its
+        # Area2D to detect the player.
+        collision_layer = 2
+        collision_mask = 1
+        $DamageArea.collision_layer = 2
+        $DamageArea.collision_mask = 1
 
 func _physics_process(delta):
 	if player:
@@ -21,7 +28,7 @@ func _on_body_entered(body):
 		
 
 
-func _on_DamageArea_body_entered(body):
+func _on_damage_area_body_entered(body):
 	if body.is_in_group("Player"):
 		body.change_health(-damage)
 		body.apply_knockback(position)  # 'position' here is the enemy's position
