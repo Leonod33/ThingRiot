@@ -1,13 +1,13 @@
 extends CharacterBody2D
 
 func _ready():
-        # The player only collides with the map so enemies don't physically
-        # block or push them. Enemy contact is handled via Area2D.
-        collision_layer = 1
-        collision_mask = 1
+		# The player only collides with the map so enemies don't physically
+		# block or push them. Enemy contact is handled via Area2D.
+	collision_layer = 1
+	collision_mask = 1
 
 # Movement speed in pixels/sec
-var speed := 200
+var speed := 260
 
 # --- Health System ---
 var max_health := 6 # For example, 3 hearts (each = 2 HP)
@@ -16,7 +16,7 @@ var current_health := max_health
 var invincible_timer := 0.0
 const INVINCIBLE_TIME := 1.0  # seconds
 
-var knockback_strength := 200.0  # tweak to taste
+var knockback_strength := 140.0  # tweak to taste
 var knockback_vector := Vector2.ZERO
 
 
