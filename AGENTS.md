@@ -84,3 +84,4 @@ Transition between Title, Gameplay, and Game Over as needed.
 Note for AI Agents:
 Each system should be implemented as a modular script/component, using Godot’s recommended scene structure and best practices for GDScript. Focus on clear signals and separation of responsibilities.
 Document any changes or additions below.
+- Added title screen scene (title_screen.tscn) loading main game on Start.
