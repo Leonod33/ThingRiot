@@ -70,3 +70,22 @@ func _physics_process(delta):
 
 
 # Get viewport size
+
+
+func _on_attack_timer_timeout():
+	attack_nearest_enemy()
+	
+	
+func attack_nearest_enemy():
+	var nearest = null
+	var nearest_dist = INF
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		var dist = position.distance_to(enemy.position)
+		if dist < 300 and dist < nearest_dist:  # 300 is your attack range
+			nearest = enemy
+			nearest_dist = dist
+	if nearest:
+		var bullet = preload("res://crown_bullet.tscn").instantiate()
+		get_parent().add_child(bullet)
+		bullet.position = position
+		bullet.direction = (nearest.position - position).normalized()

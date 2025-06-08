@@ -1,27 +1,65 @@
-[gd_scene load_steps=2 format=3 uid="uid://cktvmsritksbu"]
+[gd_scene load_steps=6 format=3 uid="uid://cktvmsritksbu"]
 
 [ext_resource type="Script" path="res://game_over_screen.gd" id="1_5pmae"]
+[ext_resource type="FontFile" uid="uid://25habw15i8u0" path="res://assets/fonts/HARLOWSI.TTF" id="2_1ylpj"]
+[ext_resource type="Texture2D" uid="uid://c8qqaci368mho" path="res://assets/sprites/badgrass.png" id="3_lnpne"]
+[ext_resource type="FontFile" uid="uid://cr6tea62v8cpb" path="res://assets/fonts/Commodore Pixelized v1.2.ttf" id="4_obnwv"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2bhyf"]
+texture = ExtResource("3_lnpne")
+texture_margin_left = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 3.0
 
 [node name="GameOverScreen" type="Control"]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 script = ExtResource("1_5pmae")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -72.5
+offset_top = -36.5
+offset_right = 72.5
+offset_bottom = 36.5
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.021, 1)
+pivot_offset = Vector2(46, 29)
+alignment = 1
 
 [node name="GameOverLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-text = "GAME OVER"
+size_flags_horizontal = 4
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 2
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_outline_size = 4
+theme_override_fonts/font = ExtResource("2_1ylpj")
+theme_override_font_sizes/font_size = 120
+theme_override_styles/normal = SubResource("StyleBoxTexture_2bhyf")
+text = "Game  Over"
+horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("4_obnwv")
+theme_override_font_sizes/font_size = 88
 text = "RESTART"
 
 [connection signal="pressed" from="VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]

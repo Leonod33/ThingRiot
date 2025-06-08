@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://dvk52k5ophbpv"]
+
+[ext_resource type="Script" path="res://crown_bullet.gd" id="1_q7bfp"]
+[ext_resource type="Texture2D" uid="uid://6vhwbhuvfy3x" path="res://assets/sprites/CrownWep.png" id="2_kw7x3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xjiyb"]
+size = Vector2(29, 20)
+
+[node name="CrownBullet" type="Area2D"]
+script = ExtResource("1_q7bfp")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_kw7x3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3.28)
+shape = SubResource("RectangleShape2D_xjiyb")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
