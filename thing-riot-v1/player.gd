@@ -37,8 +37,9 @@ func change_health(amount: int):
 			die()
 
 func die():
-	# Show "Game Over", restart, etc. For now, just print.
-	print("Game Over!")
+	get_tree().change_scene_to_file("res://GameOverScreen.tscn")
+
+	
 
 func _physics_process(delta):
 	var input_vector = Vector2.ZERO
