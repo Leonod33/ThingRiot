@@ -1,13 +1,55 @@
 extends CharacterBody2D
 
 func _ready():
-		# The player only collides with the map so enemies don't physically
-		# block or push them. Enemy contact is handled via Area2D.
+	# your existing setup
 	collision_layer = 1
 	collision_mask = 1
+	if not is_in_group("Player"):
+		add_to_group("Player")
 
+	# connect to the HUD once
+	var hud := get_node("/root/Main/UILayer")
+	if hud and not is_connected("xp_changed", Callable(hud, "update_xp")):
+		connect("xp_changed", Callable(hud, "update_xp"))
 # Movement speed in pixels/sec
 var speed := 260
+
+# --- XP / Level ---
+var level: int = 1
+var xp: int = 0
+var xp_to_next: int = 5
+
+signal xp_changed(xp: int, xp_to_next: int, level: int)
+signal level_up(level: int)
+
+
+func add_xp(n: int) -> void:
+	xp += n
+	emit_signal("xp_changed", xp, xp_to_next, level)
+
+	while xp >= xp_to_next:
+		xp -= xp_to_next
+		level += 1
+		_on_level_up()
+		emit_signal("xp_changed", xp, xp_to_next, level)  # refresh for new threshold
+
+func _on_level_up() -> void:
+	# your buffs
+	max_health += 2
+	current_health = min(current_health + 2, max_health)
+	speed += 8
+	xp_to_next = int(ceil(xp_to_next * 1.5))
+
+	# update hearts (you already use this exact path)
+	get_node("/root/Main/UILayer/HUD/HBoxContainer").update_hearts()
+
+	# popup above player
+	var hud := get_node("/root/Main/UILayer")
+	if hud:
+		hud.call("show_level_up_at_player", self)
+
+	emit_signal("level_up", level)
+
 
 # --- Health System ---
 var max_health := 6 # For example, 3 hearts (each = 2 HP)
@@ -29,7 +71,7 @@ func apply_knockback(from_position: Vector2):
 func change_health(amount: int):
 	if invincible_timer <= 0:
 		current_health = clamp(current_health + amount, 0, max_health)
-		get_node("/root/Main/UILayer/HBoxContainer").update_hearts()
+		get_node("/root/Main/UILayer/HUD/HBoxContainer").update_hearts()
 		
 		if amount < 0:
 			invincible_timer = INVINCIBLE_TIME
@@ -76,16 +118,25 @@ func _on_attack_timer_timeout():
 	attack_nearest_enemy()
 	
 	
-func attack_nearest_enemy():
-	var nearest = null
-	var nearest_dist = INF
+func attack_nearest_enemy() -> void:
+	var nearest: Node2D = null
+	var nearest_dist: float = INF
+
 	for enemy in get_tree().get_nodes_in_group("enemies"):
-		var dist = position.distance_to(enemy.position)
-		if dist < 300 and dist < nearest_dist:  # 300 is your attack range
+		var dist := global_position.distance_to(enemy.global_position)
+		if dist < 300.0 and dist < nearest_dist:  # 300 is your attack range
 			nearest = enemy
 			nearest_dist = dist
+
 	if nearest:
-		var bullet = preload("res://crown_bullet.tscn").instantiate()
-		get_parent().add_child(bullet)
-		bullet.position = position
-		bullet.direction = (nearest.position - position).normalized()
+		var dir := (nearest.global_position - global_position)
+		if dir.length() < 8.0:
+			return  # too close; skip this tick (or pick another target)
+		dir = dir.normalized()
+
+		var bullet := preload("res://crown_bullet.tscn").instantiate()
+		get_tree().current_scene.add_child(bullet)
+
+		# spawn slightly ahead to avoid self-collision
+		bullet.global_position = global_position + dir * 14.0
+		bullet.direction = dir

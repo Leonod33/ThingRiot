@@ -1,8 +1,8 @@
 extends CharacterBody2D
 
-@export var speed := 145
+@export var speed := 120
 @export var damage := 1
-@export var hp := 3
+@export var hp := 2
 
 var player = null
 
@@ -34,7 +34,13 @@ func take_damage(amount):
 	print("Enemy took damage, HP is now:", hp)
 	if hp <= 0:
 		print("Enemy should be dead")
+		_spawn_xp_gem(global_position)
 		queue_free()
+
+func _spawn_xp_gem(pos: Vector2) -> void:
+	var gem := preload("res://pickups/XPGem.tscn").instantiate()
+	get_tree().current_scene.add_child(gem)
+	gem.global_position = pos
 
 
 func _on_damage_area_body_entered(body):

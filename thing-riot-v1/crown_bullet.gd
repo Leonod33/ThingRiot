@@ -1,31 +1,47 @@
 extends Area2D
 
-@export var speed: float = 400
+@export var speed: float = 460.0
+@export var lifetime: float = 1.6
 var direction: Vector2 = Vector2.ZERO
 
-func _ready():
-		# Put the bullet on its own layer and make sure it can detect enemies
-		# (which use layer 2). Using a dedicated layer prevents unintended
-		# collisions with the map or the player.
-		collision_layer = 4
-		collision_mask = 2
-		connect("body_entered", _on_body_entered)
+var _t := 0.0
 
-func _process(delta):
-		position += direction * speed * delta
+func _ready() -> void:
+	# Layers: Player=1, Enemy=2  (per your setup)
+	collision_layer = 4              # bullet on its own layer
+	collision_mask = 2               # only hit enemies
 
-		# Optionally, remove bullet if it leaves the screen
-		if not get_viewport_rect().has_point(position):
-				queue_free()
+	# If direction wasn’t set by the spawner for any reason, pick a fallback
+	if direction.length() < 0.001:
+		direction = Vector2.RIGHT
 
-func _damage_target(target):
-		if target.is_in_group("enemies"):
-				target.take_damage(1)
-				queue_free()
+	# Optional: ignore collisions for the first instant to avoid any spawn overlap oddities
+	# set_deferred("monitoring", false)
+	# await get_tree().process_frame
+	# set_deferred("monitoring", true)
 
-func _on_area_entered(area):
-		var maybe_enemy = area.get_parent()
-		_damage_target(maybe_enemy)
+	# Connect signals if not wired in the scene
+	if not is_connected("body_entered", Callable(self, "_on_body_entered")):
+		connect("body_entered", Callable(self, "_on_body_entered"))
 
-func _on_body_entered(body):
-		_damage_target(body)
+func _physics_process(delta: float) -> void:
+	# Normalize once to avoid tiny magnitudes stalling motion
+	if direction.length() < 0.001:
+		direction = Vector2.RIGHT
+	else:
+		direction = direction.normalized()
+
+	global_position += direction * speed * delta
+
+	# Hard TTL so bullets never hang around
+	_t += delta
+	if _t >= lifetime:
+		queue_free()
+
+
+
+func _on_body_entered(body: Node) -> void:
+	if body.is_in_group("enemies"):
+		if body.has_method("take_damage"):
+			body.take_damage(1)
+		queue_free()
