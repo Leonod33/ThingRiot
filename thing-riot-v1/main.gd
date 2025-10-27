@@ -1,0 +1,52 @@
+extends Node2D
+
+@onready var pause_panel := $UILayer/PausePanel
+@onready var player := $Player
+@onready var upgrade_picker: UpgradePicker = $UILayer/UpgradePicker
+
+var pending_level_ups: int = 0
+
+func _ready() -> void:
+	print("[Main] ready")
+	# You already refresh the pause panel on stat changes:
+	player.level_up.connect(_on_player_stats_changed)
+	player.xp_changed.connect(_on_player_stats_changed)
+
+	# --- Upgrade system wiring ---
+	player.level_up.connect(_on_player_level_up)
+	upgrade_picker.upgrade_picked.connect(_on_upgrade_picked)
+
+func _input(event: InputEvent) -> void:
+	# Ignore pause input while the upgrade picker is open
+	if upgrade_picker.visible:
+		return
+	if event.is_action_pressed("pause"):
+		print("[Main] pause action detected")
+		_toggle_pause()
+
+func _toggle_pause() -> void:
+	var pausing := not get_tree().paused
+	get_tree().paused = pausing
+	print("[Main] set paused =", pausing)
+	if pausing:
+		print("[Main] calling pause_panel.open()")
+		pause_panel.open(player)
+	else:
+		print("[Main] calling pause_panel.close()")
+		pause_panel.close()
+
+func _on_player_stats_changed(_a = 0, _b = 0, _c = 0) -> void:
+	if pause_panel.visible:
+		pause_panel._refresh()
+
+# ---------- Upgrade picker glue ----------
+
+func _on_player_level_up(_level: int) -> void:
+	pending_level_ups += 1
+	if not upgrade_picker.visible:
+		upgrade_picker.open_for(player)  # pauses the tree itself
+
+func _on_upgrade_picked(_id: String) -> void:
+	pending_level_ups -= 1
+	if pending_level_ups > 0:
+		upgrade_picker.open_for(player)

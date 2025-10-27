@@ -1,11 +1,17 @@
-[gd_scene load_steps=10 format=4 uid="uid://dols2l7upd4me"]
+[gd_scene load_steps=17 format=4 uid="uid://dols2l7upd4me"]
 
 [ext_resource type="Script" path="res://player.gd" id="1_1qukb"]
+[ext_resource type="Script" path="res://main.gd" id="1_tjnvo"]
 [ext_resource type="Texture2D" uid="uid://r5gocwpibv1p" path="res://assets/sprites/ManThing.png" id="2_r63pj"]
 [ext_resource type="Texture2D" uid="uid://c8qqaci368mho" path="res://assets/sprites/badgrass.png" id="3_0c452"]
+[ext_resource type="Resource" uid="uid://0tu4sbysx2id" path="res://data/PlayerStats_default.tres" id="3_yuard"]
 [ext_resource type="Script" path="res://uiHearts.gd" id="4_e7x02"]
 [ext_resource type="Script" path="res://ui_layer.gd" id="4_n77pv"]
 [ext_resource type="Script" path="res://enemy_spawner.gd" id="5_15u5r"]
+[ext_resource type="Script" path="res://pause_panel.gd" id="8_n5tbk"]
+[ext_resource type="Script" path="res://upgrade_picker.gd" id="9_3n6bc"]
+[ext_resource type="Script" path="res://prop_spawner.gd" id="11_6oxxo"]
+[ext_resource type="PackedScene" uid="uid://eao7u8rogiqc" path="res://DestructibleProp.tscn" id="12_jb1k6"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ouhrm"]
 texture = ExtResource("3_0c452")
@@ -17,7 +23,11 @@ sources/0 = SubResource("TileSetAtlasSource_ouhrm")
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2nu1n"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tnny0"]
+bg_color = Color(0.184314, 0.129412, 0.384314, 0.65098)
+
 [node name="Main" type="Node2D"]
+script = ExtResource("1_tjnvo")
 
 [node name="Level1" type="Node2D" parent="."]
 
@@ -32,6 +42,7 @@ tile_set = SubResource("TileSet_662e5")
 [node name="Player" type="CharacterBody2D" parent="." groups=["Player"]]
 position = Vector2(1500, 900)
 script = ExtResource("1_1qukb")
+stats = ExtResource("3_yuard")
 
 [node name="Sprite2D" type="Sprite2D" parent="Player"]
 scale = Vector2(3, 3)
@@ -81,7 +92,101 @@ text = "Level Up!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="PausePanel" type="Panel" parent="UILayer"]
+process_mode = 2
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tnny0")
+script = ExtResource("8_n5tbk")
+
+[node name="Center" type="CenterContainer" parent="UILayer/PausePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Box" type="VBoxContainer" parent="UILayer/PausePanel/Center"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UILayer/PausePanel/Center/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="UILayer/PausePanel/Center/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="UILayer/PausePanel/Center/Box"]
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="UILayer/PausePanel/Center/Box/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Resume
+"
+
+[node name="QuitButton" type="Button" parent="UILayer/PausePanel/Center/Box/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Quit
+"
+
+[node name="UpgradePicker" type="PopupPanel" parent="UILayer"]
+process_mode = 2
+script = ExtResource("9_3n6bc")
+
+[node name="Center" type="CenterContainer" parent="UILayer/UpgradePicker"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 527.0
+offset_bottom = 98.0
+
+[node name="Box" type="VBoxContainer" parent="UILayer/UpgradePicker/Center"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="UILayer/UpgradePicker/Center/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 54
+text = "Choose an Upgrade:"
+
+[node name="Row" type="HBoxContainer" parent="UILayer/UpgradePicker/Center/Box"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="OptA" type="Button" parent="UILayer/UpgradePicker/Center/Box/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="OptB" type="Button" parent="UILayer/UpgradePicker/Center/Box/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="OptC" type="Button" parent="UILayer/UpgradePicker/Center/Box/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("5_15u5r")
+
+[node name="PropSpawner" type="Node" parent="."]
+script = ExtResource("11_6oxxo")
+prop_scene = ExtResource("12_jb1k6")
+min_distance_from_player = 175.0
 
 [connection signal="timeout" from="Player/AttackTimer" to="Player" method="_on_attack_timer_timeout"]

@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://eao7u8rogiqc"]
+
+[ext_resource type="Script" path="res://destructible_prop.gd" id="1_7yktg"]
+[ext_resource type="Texture2D" uid="uid://dxlyc1xnrw3a5" path="res://assets/sprites/crate.png" id="2_6g6nv"]
+[ext_resource type="PackedScene" uid="uid://citfbkp25yi2r" path="res://HealthPickup.tscn" id="2_w2qax"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8pwsx"]
+size = Vector2(14, 13)
+
+[node name="DestructibleProp" type="Node2D"]
+script = ExtResource("1_7yktg")
+drop_scene = ExtResource("2_w2qax")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 50
+texture = ExtResource("2_6g6nv")
+
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+position = Vector2(-1, 2.5)
+shape = SubResource("RectangleShape2D_8pwsx")
