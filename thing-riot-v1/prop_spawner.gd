@@ -17,10 +17,16 @@ func _ready() -> void:
 		push_warning("PropSpawner: no Player in group 'Player'")
 		return
 
-	var map := get_node_or_null(tilemap_path) as TileMap
-	if map == null:
-		push_warning("PropSpawner: TileMap not found at %s" % [tilemap_path])
-		return
+        var map := get_node_or_null(tilemap_path)
+        if map == null:
+                push_warning("PropSpawner: TileMap not found at %s" % [tilemap_path])
+                return
+        if not (map is TileMapLayer or map is TileMap):
+                push_warning("PropSpawner: node at %s is not a TileMapLayer/TileMap" % [tilemap_path])
+                return
+        if not map.has_method("get_used_rect"):
+                push_warning("PropSpawner: node at %s has no get_used_rect()" % [tilemap_path])
+                return
 
 	# --- world-space bounds from used_rect ---
 	var used_rect: Rect2i = map.get_used_rect()
@@ -34,7 +40,7 @@ func _ready() -> void:
 		_spawn_test_prop(player)
 		return
 
-	var tile_size := Vector2(map.tile_set.tile_size)
+        var tile_size := Vector2(map.tile_set.tile_size)
 	var origin_world: Vector2 = map.to_global(Vector2(used_rect.position) * tile_size)
 	var size_world:   Vector2 = Vector2(used_rect.size) * tile_size
 
