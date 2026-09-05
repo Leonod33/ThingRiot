@@ -57,7 +57,7 @@ func _refresh() -> void:
 	lines.append("")
 	lines.append("Level: %d" % player.level)
 	lines.append("XP: %d / %d" % [player.xp, player.xp_to_next])
-	lines.append("HP: %d / %d" % [player.current_health, player.max_health])
+	lines.append("HP: %.2f / %d" % [player.current_health, player.max_health])
 	lines.append("")
 	lines.append("Speed: %.0f px/s" % s.speed)
 	lines.append("Attack Power: %d" % s.attack_power)
@@ -70,3 +70,8 @@ func _refresh() -> void:
 	lines.append("Luck: %.0f%%" % (s.luck * 100.0))
 
 	stats_label.text = "\n".join(lines)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("pause") and not event.is_echo():
+		_on_resume_pressed()
+		get_viewport().set_input_as_handled()

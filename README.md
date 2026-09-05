@@ -40,3 +40,21 @@ Survive against endless waves of oddball enemies, armed with the strangest arsen
 1. Clone the repo
 2. Open the project in Godot
 3. Hit Play!
+
+## Core-loop stability update
+
+- Multiple levels earned together give one choice each while combat stays paused.
+- Starting again restores the original stats, XP and health.
+- Armour reduces damage fractionally; exact HP is visible in the pause panel and heart tooltip. Half-heart icons round remaining HP upward; odd maximum HP now has its own final heart.
+- Knockback upgrades strengthen crown hits against enemies. Clover adds 10% of the base crate-drop chance per upgrade (35% becomes 38.5% after one; capped at a 100% bonus).
+- Capped upgrades stop appearing. Health pickups work during damage immunity. Crowns, enemies, crates and pickups cannot award duplicate hits or rewards in one frame.
+
+### Regression tests
+Requires Godot 4.3. From the repository root:
+
+```sh
+godot --headless --editor --path thing-riot-v1 --import
+godot --headless --path thing-riot-v1 --script res://tests/core_loop_test.gd
+```
+
+The tests load the actual game scenes and exercise queued choices, armour, healing, capped upgrades, loot, projectile collisions, pause, death and restart.

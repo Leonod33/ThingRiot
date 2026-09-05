@@ -3,6 +3,7 @@ extends Area2D
 @export var xp_value: int = 1
 @export var magnet_radius: float = 140.0
 var _player: Node2D
+var collected := false
 
 func _ready() -> void:
 	# Your Player group is "Player" (capital P)
@@ -14,6 +15,7 @@ func _process(delta: float) -> void:
 		global_position = global_position.lerp(_player.global_position, 5.0 * delta)
 
 func _on_body_entered(body: Node) -> void:
-	if body.is_in_group("Player") and body.has_method("add_xp"):
+	if not collected and body.is_in_group("Player") and not body.dead:
+		collected = true
 		body.add_xp(xp_value)
 		queue_free()

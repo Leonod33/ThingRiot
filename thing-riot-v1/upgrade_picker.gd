@@ -15,6 +15,9 @@ var current_choices: Array = []
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	visible = false
+	exclusive = true
+	popup_window = false
+	unresizable = true
 	# Button handlers
 	btn_a.pressed.connect(func(): _choose(0))
 	btn_b.pressed.connect(func(): _choose(1))
@@ -26,13 +29,6 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event.is_action_pressed("ui_accept"):
-		var f = get_viewport().gui_get_focus_owner()
-		if f is Button:
-			(f as Button).pressed.emit()
-			get_viewport().set_input_as_handled()
-
-			get_viewport().set_input_as_handled()
 	if event.is_action_pressed("ui_cancel"):
 		# Optional: disallow cancel; do nothing
 		get_viewport().set_input_as_handled()
@@ -81,7 +77,7 @@ func _pool() -> Array:
 		{
 			"id": "kb_20",
 			"title": "Knockback",
-			"desc": "+20% Knockback",
+			"desc": "+20% Crown Knockback",
 			"apply": Callable(self, "_apply_kb_20"),
 		},
 		{
@@ -93,7 +89,7 @@ func _pool() -> Array:
 		{
 			"id": "luck_10",
 			"title": "Clover",
-			"desc": "+10% Luck",
+			"desc": "+10% of base crate-drop chance",
 			"apply": Callable(self, "_apply_luck_10"),
 		},
 		{
@@ -133,7 +129,7 @@ func _apply_def_5(p):
 	p.stats.defense = clamp(p.stats.defense + 0.05, 0.0, 0.8)
 
 func _apply_luck_10(p):
-	p.stats.luck += 0.10
+	p.stats.luck = minf(1.0, p.stats.luck + 0.10)
 
 func _apply_hp_1(p):
 	p.stats.max_health += 1
@@ -148,7 +144,7 @@ func open_for(player_ref: Node) -> void:
 	# Pause game and show
 	get_tree().paused = true
 	# pick 3 unique choices
-	var pool := _pool().duplicate()
+	var pool := _pool().filter(func(choice): return _is_available(choice["id"]))
 	pool.shuffle()
 	current_choices = pool.slice(0, 3)
 	# Fill buttons
@@ -165,10 +161,18 @@ func _set_button(btn: Button, choice: Dictionary) -> void:
 	btn.custom_minimum_size = Vector2(260, 0)
 
 func _choose(index: int) -> void:
-	if player == null or index < 0 or index >= current_choices.size():
+	if not visible or player == null or index < 0 or index >= current_choices.size():
 		return
 	var choice : Dictionary = current_choices[index]
 	(choice["apply"] as Callable).call(player)
-	emit_signal("upgrade_picked", choice["id"])
 	hide()
-	get_tree().paused = false
+	current_choices.clear()
+	emit_signal("upgrade_picked", choice["id"])
+
+func _is_available(id: String) -> bool:
+	match id:
+		"proj_1": return player.stats.projectile_count < 6
+		"rate_10": return player.stats.attack_speed > 0.050001
+		"def_5": return player.stats.defense < 0.799999
+		"luck_10": return player.stats.luck < 0.999999
+	return true

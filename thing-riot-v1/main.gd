@@ -7,7 +7,7 @@ extends Node2D
 var pending_level_ups: int = 0
 
 func _ready() -> void:
-	print("[Main] ready")
+	get_tree().paused = false
 	# You already refresh the pause panel on stat changes:
 	player.level_up.connect(_on_player_stats_changed)
 	player.xp_changed.connect(_on_player_stats_changed)
@@ -18,9 +18,10 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Ignore pause input while the upgrade picker is open
-	if upgrade_picker.visible:
+	if pending_level_ups > 0:
 		return
-	if event.is_action_pressed("pause"):
+	if event.is_action_pressed("pause") and not event.is_echo():
+		get_viewport().set_input_as_handled()
 		print("[Main] pause action detected")
 		_toggle_pause()
 
@@ -43,10 +44,18 @@ func _on_player_stats_changed(_a = 0, _b = 0, _c = 0) -> void:
 
 func _on_player_level_up(_level: int) -> void:
 	pending_level_ups += 1
-	if not upgrade_picker.visible:
-		upgrade_picker.open_for(player)  # pauses the tree itself
+	get_tree().paused = true
+	pause_panel.close()
+	if pending_level_ups == 1:
+		_open_next_upgrade.call_deferred()
 
 func _on_upgrade_picked(_id: String) -> void:
-	pending_level_ups -= 1
+	pending_level_ups = maxi(0, pending_level_ups - 1)
 	if pending_level_ups > 0:
+		_open_next_upgrade.call_deferred()
+	else:
+		get_tree().paused = false
+
+func _open_next_upgrade() -> void:
+	if pending_level_ups > 0 and not upgrade_picker.visible:
 		upgrade_picker.open_for(player)

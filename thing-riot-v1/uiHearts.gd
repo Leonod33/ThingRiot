@@ -16,13 +16,15 @@ func _ready():
 func update_hearts():
 	# Clear any existing hearts
 	for c in get_children():
+		remove_child(c)
 		c.queue_free()
 
 	var p = get_node(player)
-	var health = p.current_health
+	var health = ceili(p.current_health)
 	var max_health = p.max_health
 
-	var hearts = max_health / 2
+	tooltip_text = "HP: %.2f / %d" % [p.current_health, max_health]
+	var hearts = ceili(float(max_health) / 2.0)
 	for i in range(hearts):
 		var heart = TextureRect.new()
 		if health >= 2:

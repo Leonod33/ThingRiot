@@ -12,6 +12,8 @@ extends Area2D
 
 var direction: Vector2 = Vector2.ZERO
 var _t := 0.0
+var spent := false
+var knockback_power: float = 140.0
 var _sprite_base_scale := Vector2.ONE
 
 func _ready() -> void:
@@ -25,8 +27,13 @@ func _ready() -> void:
 		_sprite_base_scale = sprite.scale
 		sprite.scale = _sprite_base_scale * (base_visual_scale * size_multiplier)
 
-	if colshape and colshape.shape is CircleShape2D:
-		(colshape.shape as CircleShape2D).radius = base_hit_radius * size_multiplier
+	if colshape and colshape.shape:
+		colshape.shape = colshape.shape.duplicate()
+		if colshape.shape is CircleShape2D:
+			colshape.shape.radius = base_hit_radius * size_multiplier
+		elif colshape.shape is RectangleShape2D:
+			colshape.shape.size *= size_multiplier
+		colshape.position *= size_multiplier
 
 	if not is_connected("body_entered", Callable(self, "_on_body_entered")):
 		connect("body_entered", Callable(self, "_on_body_entered"))
@@ -43,13 +50,19 @@ func _physics_process(delta: float) -> void:
 	if _t >= lifetime:
 		queue_free()
 
+func _hit(target: Node) -> void:
+	if spent or not is_instance_valid(target) or target.is_queued_for_deletion():
+		return
+	if not (target.is_in_group("enemies") or target.is_in_group("destructible")) or not target.has_method("take_damage"):
+		return
+	spent = true
+	target.take_damage(damage)
+	if target.has_method("apply_knockback"):
+		target.apply_knockback(global_position - direction, knockback_power)
+	queue_free()
+
 func _on_body_entered(body: Node) -> void:
-	if (body.is_in_group("enemies") or body.is_in_group("destructible")) and body.has_method("take_damage"):
-		body.take_damage(damage)
-		queue_free()
+	_hit(body)
 
 func _on_area_entered(area: Area2D) -> void:
-	var maybe := area.get_parent()
-	if maybe and (maybe.is_in_group("enemies") or maybe.is_in_group("destructible")) and maybe.has_method("take_damage"):
-		maybe.take_damage(damage)
-		queue_free()
+	_hit(area.get_parent())
