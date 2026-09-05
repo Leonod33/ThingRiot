@@ -83,3 +83,22 @@ godot --headless --path thing-riot-v1 --script res://tests/weapon_test.gd
 This is the first two-weapon balance pass, not the later boss/run progression milestone.
 
 For rendered QA, run `godot --path thing-riot-v1 --script res://tests/visual_smoke.gd`. This isolated fixture creates tough enemies, simulates movement, captures gameplay and upgrade PNGs in Godot's user-data directory, then exits. It does not change production enemy stats.
+
+
+## Step 3: Arena tricks and a new King
+
+The King now wears a gold crown, purple coat and swaying blue cape, with an ivory moustache and marching boots. His original vector artwork animates directly in Godot. A 14-pixel foot collision circle replaces the oversized body collision.
+
+- **Bomb crates** show a bomb icon. Breaking one lights a 0.55-second fuse, then deals six damage within 170 pixels to enemies and other crates. Nearby bomb crates chain with their own warning delay. These player-triggered blasts do not hurt the King.
+- **Spring pads** launch the King or enemies away from their centre, with a per-body cooldown. Use them to reposition or disrupt pursuing enemies.
+- **Chargers** begin spawning after 20 seconds. Their outlined lane and countdown ring warn of a committed dash; step sideways or slow them with crumbs.
+- **Casters** join after 40 seconds. They keep their distance and telegraph a straight projectile before firing. Both enemy types lock aim when their warning begins.
+- Bomb crates and spring pads are distributed throughout the arena. A small introductory encounter near the start lets you try both immediately; the main crate distribution still spans the map.
+
+Aim at bomb crates with RMB/right stick. The existing crown, biscuits and crumb chains interact with the new enemies and crates. Enemy and hostile-projectile populations are capped.
+
+```sh
+godot --headless --path thing-riot-v1 --script res://tests/arena_test.gd
+```
+
+Run this alongside the core and weapon suites (69 checks total). For rendered inspection, `godot --path thing-riot-v1 --script res://tests/arena_visual.gd` captures gameplay and an enlarged King portrait in the Godot user-data directory. Its frozen attack warnings and enlarged portrait are confined to the fixture. Difficulty and controller feel still need human playtesting.

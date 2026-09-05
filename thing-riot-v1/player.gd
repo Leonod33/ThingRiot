@@ -21,6 +21,16 @@ const INVINCIBLE_TIME := 1.0  # seconds
 var knockback_vector := Vector2.ZERO
 
 func _ready():
+	$Sprite2D.hide()
+	var king = preload("res://characters/king_visual.gd").new()
+	king.name = "KingVisual"
+	add_child(king)
+	var shape := CircleShape2D.new()
+	shape.radius = 14.0
+	$CollisionShape2D.shape = shape
+	$CollisionShape2D.scale = Vector2.ONE
+	$CollisionShape2D.position = Vector2(0,2)
+
 	z_index = 1
 	var weapons = preload("res://weapons/weapon_controller.gd").new()
 	weapons.name = "Weapons"

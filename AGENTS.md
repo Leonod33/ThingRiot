@@ -92,3 +92,8 @@ Document any changes or additions below.
 - Step 2: `weapons/weapon_controller.gd` owns targeting, independent cooldowns, procedural audio and recipe feedback. `RiotWeaponSpec` resources are duplicated per run. `riot_projectile.gd` sweeps collision segments; hits are limited per pass, ricochets are capped, and crown returns track the player. `crumb_patch.gd` bounds patch lifetime/population.
 - Player movement and crate placement share the camera's playable bounds. Crates use stratified arena placement, not a player-centred ring. Do not reintroduce test props into production spawning.
 - Run both `core_loop_test.gd` and `weapon_test.gd` after combat changes. For visual QA, use a separate fixture with tough enemies to make crumb chains observable; do not alter production enemy HP for screenshots.
+
+- Step 3: `arena/` owns delayed bomb chains, bumper impulses, tactical enemy states and swept hostile bolts. Base enemies expose `_desired_velocity` so attack states retain existing knockback, crumbs and death handling. Telegraph directions lock at windup; bombs are friendly environmental weapons.
+- `characters/king_visual.gd` provides original animated vector artwork. Player collision is a 14-pixel circle at the feet, independent of portrait proportions.
+- Production spawning includes a deliberate introductory bomb pair and spring pad; the rest remains spread across the arena. Screenshot-only actors stay in `tests/arena_visual.gd`.
+- Combat regression gate now includes `tests/arena_test.gd` alongside the core and weapon suites (34 + 16 + 19 checks). Rendered QA can use `tests/arena_visual.gd`.

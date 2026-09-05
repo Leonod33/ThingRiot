@@ -33,7 +33,7 @@ func _physics_process(delta):
 	queue_redraw()
 	if is_instance_valid(player) and not dead:
 		var dir = (player.position - position).normalized()
-		velocity = dir * speed * (0.45 if crumb_time > 0 else 1.0) + knockback_velocity
+		velocity = _desired_velocity(delta, dir) + knockback_velocity
 		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 700.0 * delta)
 		move_and_slide()
 
@@ -70,3 +70,6 @@ func _draw():
 		draw_arc(Vector2.ZERO, 17, 0, TAU, 24, Color("ffe0a0"), 1.5)
 		for i in range(5):
 			draw_rect(Rect2(Vector2.from_angle(i * 1.25) * 14, Vector2(3,2)), Color("fff0bb"))
+
+func _desired_velocity(_delta: float, dir: Vector2) -> Vector2:
+	return dir * speed * (0.45 if crumb_time > 0 else 1.0)

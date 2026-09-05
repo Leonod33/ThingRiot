@@ -20,6 +20,7 @@ extends Node2D
 @export_range(10.0, 360.0, 5.0) var bias_arc_deg := 120.0
 
 var _t := 0.0
+var spawned_total := 0
 var _timer := 0.0
 var _player: Node2D
 
@@ -60,7 +61,13 @@ func _spawn_enemy_batch(diff: float) -> void:
 		_spawn_one_enemy()
 
 func _spawn_one_enemy() -> void:
+	if get_tree().get_nodes_in_group("enemies").size() >= 180:
+		return
 	var e := enemy_scene.instantiate()
+	spawned_total += 1
+	if _t >= 20.0 and spawned_total % 3 == 0:
+		e.set_script(preload("res://arena/tactical_enemy.gd"))
+		e.kind = "caster" if _t >= 40.0 and spawned_total % 2 == 0 else "charger"
 	get_tree().current_scene.add_child(e)
 	e.global_position = _ring_spawn_position()
 
