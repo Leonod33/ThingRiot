@@ -22,9 +22,28 @@ func _start_spawning():
 		var pos := bounds.position + (Vector2(index % columns, index / columns) + Vector2(randf_range(0.2,0.8), randf_range(0.2,0.8))) * cell
 		if pos.distance_to(player.global_position) < min_distance_from_player:
 			continue
-		var prop = prop_scene.instantiate()
-		get_tree().current_scene.add_child(prop)
-		prop.global_position = pos
-		# Scale the entire prop so its collision matches its drawing.
-		prop.scale = Vector2(2,2)
-		placed_positions.append(pos)
+		spawn_crate(pos, index % 4 == 0)
+		if index % 8 == 0:
+			spawn_crate(pos + Vector2(-100,0), true)
+		if index % 5 == 0:
+			spawn_bumper(pos + Vector2(-70,-70))
+	# A small introductory encounter makes the new interactions discoverable.
+	spawn_crate(player.global_position + Vector2(400,60), true)
+	spawn_crate(player.global_position + Vector2(510,60), true)
+	spawn_bumper(player.global_position + Vector2(-190,120))
+
+func spawn_crate(pos: Vector2, explosive: bool):
+	var prop = prop_scene.instantiate()
+	if explosive:
+		prop.set_script(preload("res://arena/explosive_crate.gd"))
+	get_tree().current_scene.add_child(prop)
+	prop.global_position = pos
+	prop.scale = Vector2(2,2)
+	placed_positions.append(pos)
+	return prop
+
+func spawn_bumper(pos: Vector2):
+	var bumper = preload("res://arena/bumper.gd").new()
+	get_tree().current_scene.add_child(bumper)
+	bumper.global_position = pos
+	return bumper

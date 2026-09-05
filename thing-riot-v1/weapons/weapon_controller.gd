@@ -90,7 +90,7 @@ func _physics_process(delta):
 		if crown_timer <= 0:
 			fire(crown)
 			crown_timer = crown.cooldown * player.stats.attack_speed
-	readout.text = "RETURNING CROWN + BISCUIT BLASTER\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nBiscuit crumbs slow enemies and enable crown ricochets." % ["MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
+	readout.text = "RETURNING CROWN + BISCUIT BLASTER\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nCrumbs enable ricochets. Bomb crates blast foes; spring pads launch." % ["MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
 	queue_redraw()
 
 func fire(spec: Resource):
