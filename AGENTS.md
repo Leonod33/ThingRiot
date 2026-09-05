@@ -88,3 +88,7 @@ Document any changes or additions below.
 
 - Core-loop stability: Main owns queued-upgrade pause transitions. Picker hides before emitting its selection and subsequent choices open deferred. Player duplicates stats per run; damage/death/pickup paths guard duplicate callbacks. Armour uses fractional HP; crowns apply outgoing knockback; luck increases crate drops.
 - Regression command (Godot 4.3): `godot --headless --path thing-riot-v1 --script res://tests/core_loop_test.gd`. Import once first with `godot --headless --editor --path thing-riot-v1 --import`.
+
+- Step 2: `weapons/weapon_controller.gd` owns targeting, independent cooldowns, procedural audio and recipe feedback. `RiotWeaponSpec` resources are duplicated per run. `riot_projectile.gd` sweeps collision segments; hits are limited per pass, ricochets are capped, and crown returns track the player. `crumb_patch.gd` bounds patch lifetime/population.
+- Player movement and crate placement share the camera's playable bounds. Crates use stratified arena placement, not a player-centred ring. Do not reintroduce test props into production spawning.
+- Run both `core_loop_test.gd` and `weapon_test.gd` after combat changes. For visual QA, use a separate fixture with tough enemies to make crumb chains observable; do not alter production enemy HP for screenshots.

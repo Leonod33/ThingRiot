@@ -6,9 +6,12 @@ extends CharacterBody2D
 
 var player = null
 var dead := false
+var crumb_time := 0.0
+var flash_time := 0.0
 var knockback_velocity := Vector2.ZERO
 
 func _ready():
+	z_index = 1
 		# Find player node once at start (adjust path if needed)
 	add_to_group("enemies")
 	player = get_node("/root/Main/Player")
@@ -20,10 +23,17 @@ func _ready():
 	$DamageArea.collision_layer = 2
 	$DamageArea.collision_mask = 1
 
+func coat_with_crumbs():
+	crumb_time = 2.0
+
 func _physics_process(delta):
+	crumb_time = maxf(0.0, crumb_time - delta)
+	flash_time = maxf(0.0, flash_time - delta)
+	$Sprite2D.modulate = Color(3,3,3) if flash_time > 0 else Color.WHITE
+	queue_redraw()
 	if is_instance_valid(player) and not dead:
 		var dir = (player.position - position).normalized()
-		velocity = dir * speed + knockback_velocity
+		velocity = dir * speed * (0.45 if crumb_time > 0 else 1.0) + knockback_velocity
 		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 700.0 * delta)
 		move_and_slide()
 
@@ -33,6 +43,7 @@ func _on_body_entered(body):
 func take_damage(amount):
 	if dead or amount <= 0:
 		return
+	flash_time = 0.08
 	hp -= amount
 	if hp <= 0:
 		dead = true
@@ -53,3 +64,9 @@ func _on_damage_area_body_entered(body):
 		body.apply_knockback(global_position)
 		var push_dir = (global_position - body.global_position).normalized()
 		global_position += push_dir * 20
+
+func _draw():
+	if crumb_time > 0:
+		draw_arc(Vector2.ZERO, 17, 0, TAU, 24, Color("ffe0a0"), 1.5)
+		for i in range(5):
+			draw_rect(Rect2(Vector2.from_angle(i * 1.25) * 14, Vector2(3,2)), Color("fff0bb"))
