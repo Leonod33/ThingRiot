@@ -49,13 +49,13 @@ func _offscreen_radius() -> float:
 
 	# Visible size in pixels → scaled by camera zoom → half-diagonal in world units
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	var half_size_world := (vp_size * cam.zoom) * 0.5
+	var half_size_world := (vp_size / cam.zoom) * 0.5
 	var half_diagonal := half_size_world.length()
 
 	return half_diagonal + offscreen_margin
 
 func _spawn_enemy_batch(diff: float) -> void:
-	var count := 1 + int(floor(lerp(1.0, float(batch_max), diff)))
+	var count := int(floor(lerp(1.0, float(batch_max), diff)))
 	for i in count:
 		_spawn_one_enemy()
 

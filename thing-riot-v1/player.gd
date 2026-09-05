@@ -21,6 +21,11 @@ const INVINCIBLE_TIME := 1.0  # seconds
 var knockback_vector := Vector2.ZERO
 
 func _ready():
+	z_index = 1
+	var weapons = preload("res://weapons/weapon_controller.gd").new()
+	weapons.name = "Weapons"
+	add_child.call_deferred(weapons)
+	$AttackTimer.stop()
 	# Resources loaded from disk are shared; upgrades belong to this run only.
 	stats = stats.duplicate(true) if stats else PlayerStats.new()
 	# collision setup
@@ -102,78 +107,22 @@ func _physics_process(delta):
 
 	input_vector.x = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
 	input_vector.y = Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-	input_vector = input_vector.normalized()
+	input_vector += Vector2(float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
+	var pads = Input.get_connected_joypads()
+	if not pads.is_empty():
+		var stick = Vector2(Input.get_joy_axis(pads[0], JOY_AXIS_LEFT_X), Input.get_joy_axis(pads[0], JOY_AXIS_LEFT_Y))
+		if stick.length() > 0.2:
+			input_vector = stick.normalized() * clampf((stick.length() - 0.2) / 0.8, 0.0, 1.0)
+	input_vector = input_vector.limit_length(1.0)
 
 	# MOVE using stats.speed
 	var move_speed := stats.speed if stats else 260.0
-	velocity = input_vector * move_speed
+	velocity = input_vector * move_speed + knockback_vector
 	move_and_slide()
-
-	# map bounds clamp
-	var map_node = get_node("/root/Main/Level1/TileMapLayer")
-	var tile_size = map_node.tile_set.tile_size
-	var map_rect = map_node.get_used_rect()
-	var map_size = map_rect.size * tile_size
-
-	# knockback decay
-	if knockback_vector.length() > 0.1:
-		position += knockback_vector * delta
-		knockback_vector = lerp(knockback_vector, Vector2.ZERO, 6 * delta)
-
-	position.x = clamp(position.x, 0, map_size.x)
-	position.y = clamp(position.y, 0, map_size.y)
+	knockback_vector = knockback_vector.move_toward(Vector2.ZERO, 650.0 * delta)
+	var camera: Camera2D = $Camera2D
+	global_position.x = clampf(global_position.x, camera.limit_left + 35, camera.limit_right - 35)
+	global_position.y = clampf(global_position.y, camera.limit_top + 55, camera.limit_bottom - 55)
 
 func _on_attack_timer_timeout():
-	attack_nearest_enemy()
-
-func attack_nearest_enemy() -> void:
-	if dead:
-		return
-	var nearest: Node2D = null
-	var nearest_dist: float = INF
-
-	var attack_range := stats.projectile_range if stats else 300.0
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if enemy.is_queued_for_deletion():
-			continue
-		var dist := global_position.distance_to(enemy.global_position)
-		if dist < attack_range and dist < nearest_dist:
-			nearest = enemy
-			nearest_dist = dist
-
-	if nearest == null:
-		return
-
-	var dir := (nearest.global_position - global_position)
-	if dir.length() < 8.0:
-		return
-	dir = dir.normalized()
-
-	var count := stats.projectile_count if stats else 1
-	var spread_deg: float = clamp(float(count - 1), 0.0, 6.0) * 6.0  # gentle fan spread as count grows
-	var start_angle := -deg_to_rad(spread_deg * 0.5)
-	var step := deg_to_rad(spread_deg / max(1, count - 1))
-
-	for i in count:
-		var angle := start_angle + step * i
-		var shot_dir := dir.rotated(angle)
-
-		var bullet = preload("res://crown_bullet.tscn").instantiate()
-
-		# --- set everything the bullet needs BEFORE it's added to the tree ---
-		bullet.direction = shot_dir
-		if stats:
-			bullet.damage = stats.attack_power
-			bullet.knockback_power = stats.knockback_power
-			bullet.size_multiplier = stats.projectile_size
-			# lifetime from desired range (range / speed), with a small floor
-			if bullet.speed > 0.0:
-				bullet.lifetime = max(0.2, stats.projectile_range / bullet.speed)
-
-		# you can set position before or after add_child; size must be before
-		# (I’ll keep position after add_child, as in your original style)
-		get_tree().current_scene.add_child(bullet)
-
-		# spawn slightly ahead to avoid self-collision
-		bullet.global_position = global_position + shot_dir * 14.0
-		bullet.direction = shot_dir
+	pass # WeaponController owns independent weapon cooldowns.

@@ -38,6 +38,9 @@ func _unhandled_input(event: InputEvent) -> void:
 # Each entry: id, title, desc, apply(player)
 func _pool() -> Array:
 	return [
+		{"id": "crumb_radius", "title": "Family Biscuit", "desc": "+20% Crumb Patch Radius", "apply": Callable(self, "_apply_crumb_radius")},
+		{"id": "crumb_life", "title": "Stale but Deadly", "desc": "+2 Seconds Crumb Duration", "apply": Callable(self, "_apply_crumb_life")},
+		{"id": "royal_chain", "title": "Royal Crumble", "desc": "+1 Ricochet (max 5)", "apply": Callable(self, "_apply_royal_chain")},
 		{
 			"id": "spd_10",
 			"title": "Swift Boots",
@@ -171,8 +174,20 @@ func _choose(index: int) -> void:
 
 func _is_available(id: String) -> bool:
 	match id:
+		"crumb_radius": return player.get_node("Weapons").biscuit.patch_radius < 239.99
+		"crumb_life": return player.get_node("Weapons").biscuit.patch_lifetime < 12.0
+		"royal_chain": return player.get_node("Weapons").crown.bounce_limit < 5
 		"proj_1": return player.stats.projectile_count < 6
 		"rate_10": return player.stats.attack_speed > 0.050001
 		"def_5": return player.stats.defense < 0.799999
 		"luck_10": return player.stats.luck < 0.999999
 	return true
+
+func _apply_crumb_radius(p):
+	p.get_node("Weapons").biscuit.patch_radius = minf(240.0, p.get_node("Weapons").biscuit.patch_radius * 1.2)
+
+func _apply_crumb_life(p):
+	p.get_node("Weapons").biscuit.patch_lifetime = minf(12.0, p.get_node("Weapons").biscuit.patch_lifetime + 2.0)
+
+func _apply_royal_chain(p):
+	p.get_node("Weapons").crown.bounce_limit = mini(5, p.get_node("Weapons").crown.bounce_limit + 1)
