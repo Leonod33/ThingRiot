@@ -85,3 +85,6 @@ Note for AI Agents:
 Each system should be implemented as a modular script/component, using Godot’s recommended scene structure and best practices for GDScript. Focus on clear signals and separation of responsibilities.
 Document any changes or additions below.
 - Added title screen scene (title_screen.tscn) loading main game on Start.
+
+- Core-loop stability: Main owns queued-upgrade pause transitions. Picker hides before emitting its selection and subsequent choices open deferred. Player duplicates stats per run; damage/death/pickup paths guard duplicate callbacks. Armour uses fractional HP; crowns apply outgoing knockback; luck increases crate drops.
+- Regression command (Godot 4.3): `godot --headless --path thing-riot-v1 --script res://tests/core_loop_test.gd`. Import once first with `godot --headless --editor --path thing-riot-v1 --import`.

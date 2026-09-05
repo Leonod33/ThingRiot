@@ -12,7 +12,8 @@ signal level_up(level: int)
 
 # --- Health System (values will be seeded from stats in _ready) ---
 var max_health: int = 6
-var current_health: int = 6
+var current_health: float = 6.0
+var dead := false
 
 var invincible_timer := 0.0
 const INVINCIBLE_TIME := 1.0  # seconds
@@ -20,6 +21,8 @@ const INVINCIBLE_TIME := 1.0  # seconds
 var knockback_vector := Vector2.ZERO
 
 func _ready():
+	# Resources loaded from disk are shared; upgrades belong to this run only.
+	stats = stats.duplicate(true) if stats else PlayerStats.new()
 	# collision setup
 	collision_layer = 1
 	collision_mask = 1
@@ -40,6 +43,8 @@ func _ready():
 		connect("xp_changed", Callable(hud, "update_xp"))
 
 func add_xp(n: int) -> void:
+	if dead or n <= 0:
+		return
 	xp += n
 	emit_signal("xp_changed", xp, xp_to_next, level)
 
@@ -64,29 +69,30 @@ func _on_level_up() -> void:
 
 	emit_signal("level_up", level)
 
-	# TODO soon: pause game and open the 3-choice upgrade picker
-	# get_tree().paused = true
-	# $UILayer/UpgradePicker.open(self, _on_upgrade_selected)
-
-
 func apply_knockback(from_position: Vector2) -> void:
-	# use knockback from stats
-	var strength := stats.knockback_power if stats else 140.0
 	var direction := (global_position - from_position).normalized()
-	knockback_vector = direction * strength
+	knockback_vector = direction * 140.0
 
-func change_health(amount: int):
-	if invincible_timer <= 0:
-		current_health = clamp(current_health + amount, 0, max_health)
-		get_node("/root/Main/UILayer/HUD/HBoxContainer").update_hearts()
-
-		if amount < 0:
-			invincible_timer = INVINCIBLE_TIME
-		if current_health == 0:
-			die()
+# Returns whether the hit/heal was accepted, so contact effects respect immunity.
+func change_health(amount: float) -> bool:
+	if dead or amount == 0.0 or (amount < 0.0 and invincible_timer > 0.0):
+		return false
+	if amount < 0.0:
+		amount *= 1.0 - clampf(stats.defense, 0.0, 0.8)
+		invincible_timer = INVINCIBLE_TIME
+	current_health = clampf(current_health + amount, 0.0, float(max_health))
+	get_node("/root/Main/UILayer/HUD/HBoxContainer").update_hearts()
+	if current_health <= 0.000001:
+		die()
+	return true
 
 func die():
-	get_tree().change_scene_to_file("res://GameOverScreen.tscn")
+	if dead:
+		return
+	dead = true
+	get_tree().paused = false
+	# Collision callbacks must finish before replacing the scene.
+	get_tree().change_scene_to_file.call_deferred("res://GameOverScreen.tscn")
 
 func _physics_process(delta):
 	var input_vector = Vector2.ZERO
@@ -121,11 +127,15 @@ func _on_attack_timer_timeout():
 	attack_nearest_enemy()
 
 func attack_nearest_enemy() -> void:
+	if dead:
+		return
 	var nearest: Node2D = null
 	var nearest_dist: float = INF
 
 	var attack_range := stats.projectile_range if stats else 300.0
 	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy.is_queued_for_deletion():
+			continue
 		var dist := global_position.distance_to(enemy.global_position)
 		if dist < attack_range and dist < nearest_dist:
 			nearest = enemy
@@ -154,6 +164,7 @@ func attack_nearest_enemy() -> void:
 		bullet.direction = shot_dir
 		if stats:
 			bullet.damage = stats.attack_power
+			bullet.knockback_power = stats.knockback_power
 			bullet.size_multiplier = stats.projectile_size
 			# lifetime from desired range (range / speed), with a small floor
 			if bullet.speed > 0.0:
@@ -166,12 +177,3 @@ func attack_nearest_enemy() -> void:
 		# spawn slightly ahead to avoid self-collision
 		bullet.global_position = global_position + shot_dir * 14.0
 		bullet.direction = shot_dir
-
-		# --- feed stats straight in (no has_variable) ---
-		if stats:
-			bullet.damage = stats.attack_power
-			bullet.size_multiplier = stats.projectile_size
-
-			# lifetime from desired range (range / speed), with a small floor
-			if bullet.speed > 0.0:
-				bullet.lifetime = max(0.2, stats.projectile_range / bullet.speed)

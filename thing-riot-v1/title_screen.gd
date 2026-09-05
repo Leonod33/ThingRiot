@@ -1,6 +1,7 @@
 extends Control
 
 func _on_start_button_pressed():
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://main.tscn")
 	
 func _unhandled_input(event):
@@ -8,4 +9,5 @@ func _unhandled_input(event):
 		_start_game()
 
 func _start_game():
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://main.tscn")
