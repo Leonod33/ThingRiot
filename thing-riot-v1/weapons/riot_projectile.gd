@@ -79,6 +79,7 @@ func _physics_process(delta):
 		if not returning and travelled >= reach and not is_instance_valid(bounce_target):
 			begin_return()
 		if returning and Geometry2D.get_closest_point_to_segment(owner_player.global_position, before, global_position).distance_to(owner_player.global_position) < 26:
+			play_material("catch")
 			finished = true
 			queue_free()
 	queue_redraw()
@@ -104,6 +105,7 @@ func strike(target: Node2D):
 		target.take_damage(damage)
 		burst()
 		return
+	play_material("crown_hit")
 	target.take_damage(damage)
 	if target.has_method("apply_knockback"):
 		target.apply_knockback(global_position - direction, knockback)
@@ -133,6 +135,11 @@ func burst():
 	if finished:
 		return
 	finished = true
+	play_material("crunch")
+	var fragments = Impact.new()
+	fragments.kind = "biscuit"
+	get_tree().current_scene.add_child(fragments)
+	fragments.global_position = global_position
 	var patch = Patch.new()
 	patch.radius = spec.patch_radius
 	patch.duration = spec.patch_lifetime
@@ -142,9 +149,12 @@ func burst():
 
 func _draw():
 	for i in range(1, trail.size()):
-		draw_line(to_local(trail[i - 1]), to_local(trail[i]), Color(0.5, 0.85, 1.0, 0.5 * (1.0 - float(i) / 9)), 4)
+		draw_line(to_local(trail[i - 1]), to_local(trail[i]), Color(Color("d4a363") if spec.kind == "biscuit" else Color("c5e5ed"), 0.3 * (1.0 - float(i) / 9)), 2.5)
 	if spec.kind == "biscuit":
+		draw_set_transform(Vector2.ZERO,age*5)
+		draw_circle(Vector2(1,2),14,Color("765039"))
 		draw_circle(Vector2.ZERO, 13, Color("eab26b"))
+		draw_arc(Vector2.ZERO,10,PI,TAU*0.8,12,Color("ffe0a0"),1.5,true)
 		draw_arc(Vector2.ZERO, 13, 0, TAU, 20, Color("503321"), 2)
 		for point in [Vector2(-5,-4), Vector2(5,-3), Vector2(1,5)]:
 			draw_circle(point, 2, Color("503321"))
@@ -154,3 +164,9 @@ func _draw():
 		draw_colored_polygon(points, Color("ffe090") if not returning else Color("a5ecff"))
 		points.append(points[0])
 		draw_polyline(points, Color("312c4a"), 2)
+		draw_line(Vector2(-9,7),Vector2(9,7),Color.WHITE,1.5,true)
+
+func play_material(kind: String):
+	var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+	if feedback:
+		feedback.sound(kind)

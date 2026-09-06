@@ -15,6 +15,11 @@ func _ready() -> void:
 	var feedback = preload("res://polish/feedback.gd").new()
 	feedback.name = "Feedback"
 	add_child(feedback)
+	$UILayer/HUD.hide()
+	var combat_hud = preload("res://polish/combat_hud.gd").new()
+	$UILayer.add_child(combat_hud)
+	$UILayer.move_child(combat_hud,0)
+	pause_panel.remove_theme_stylebox_override("panel")
 	pause_panel.theme = preload("res://polish/royal_theme.gd").make()
 	# You already refresh the pause panel on stat changes:
 	player.level_up.connect(_on_player_stats_changed)
@@ -26,7 +31,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Ignore pause input while the upgrade picker is open
-	if pending_level_ups > 0:
+	if pending_level_ups > 0 or (run and run.victory_pending):
 		return
 	if event.is_action_pressed("pause") and not event.is_echo():
 		get_viewport().set_input_as_handled()
@@ -51,7 +56,7 @@ func _on_player_stats_changed(_a = 0, _b = 0, _c = 0) -> void:
 # ---------- Upgrade picker glue ----------
 
 func _on_player_level_up(_level: int) -> void:
-	if run and run.ended:
+	if run and (run.ended or run.victory_pending):
 		return
 	pending_level_ups += 1
 	get_tree().paused = true

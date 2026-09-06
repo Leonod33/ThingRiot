@@ -32,8 +32,9 @@ func _physics_process(delta):
 	modulate.a = minf(1.0, (duration - age) / 0.7)
 
 func _draw():
-	draw_circle(Vector2.ZERO, radius, Color(0.9, 0.65, 0.25, 0.22))
-	draw_arc(Vector2.ZERO, radius, 0, TAU, 48, Color("ffe2a3"), 2)
+	draw_circle(Vector2.ZERO, radius, Color(0.9, 0.65, 0.25, 0.07))
+	for i in range(4):
+		draw_arc(Vector2.ZERO,radius,i*PI/2,i*PI/2+0.65,10,Color(1,0.88,0.64,0.3),1)
 	for i in range(24):
 		var point = Vector2.from_angle(i * 2.4) * sqrt(float(i + 1) / 24.0) * radius * 0.88
 		draw_rect(Rect2(point, Vector2(5, 3)), Color("ffd18a"))

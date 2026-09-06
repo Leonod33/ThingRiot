@@ -16,8 +16,6 @@ var sound_cooldown := 0.0
 var muted := false
 var readout: Label
 var combo_label: Label
-var audio: AudioStreamPlayer
-var tones := {}
 var performance_label: Label
 var performance_timer := 0.0
 
@@ -27,27 +25,13 @@ func _ready():
 	dice = dice.duplicate(true)
 	crown = crown.duplicate(true)
 	biscuit = biscuit.duplicate(true)
-	audio = AudioStreamPlayer.new()
-	audio.volume_db = -20
-	add_child(audio)
-	for kind in ["crown", "biscuit", "combo"]:
-		var wav := AudioStreamWAV.new()
-		wav.format = AudioStreamWAV.FORMAT_16_BITS
-		wav.mix_rate = 22050
-		var data := PackedByteArray()
-		data.resize(2205 * 2)
-		var freq: float = {"crown": 520.0, "biscuit": 190.0, "combo": 880.0}[kind]
-		for i in range(2205):
-			var sample = int(sin(TAU * freq * i / 22050.0) * (1.0 - float(i) / 2205) * 9000)
-			data.encode_s16(i * 2, sample)
-		wav.data = data
-		tones[kind] = wav
 	var ui = CanvasLayer.new()
 	add_child(ui)
 	readout = Label.new()
 	readout.position = Vector2(16, 125)
 	readout.add_theme_font_size_override("font_size", 16)
 	ui.add_child(readout)
+	readout.hide()
 	performance_label = Label.new()
 	performance_label.position = Vector2(930, 16)
 	performance_label.add_theme_font_size_override("font_size", 16)
@@ -57,7 +41,7 @@ func _ready():
 	performance_label.hide()
 	ui.add_child(performance_label)
 	combo_label = Label.new()
-	combo_label.position = Vector2(16, 242)
+	combo_label.position = Vector2(440, 630)
 	combo_label.add_theme_font_size_override("font_size", 24)
 	combo_label.add_theme_color_override("font_color", Color("ffe090"))
 	ui.add_child(combo_label)
@@ -78,14 +62,15 @@ func _unhandled_input(event):
 		muted = not muted
 		get_tree().set_meta("sound_on",not muted)
 		if muted:
-			audio.stop()
+			pass
 
 func _physics_process(delta):
 	if player.dead:
 		return
 	sound_cooldown = maxf(0, sound_cooldown - delta)
 	combo_time = maxf(0, combo_time - delta)
-	combo_label.visible = combo_time > 0
+	var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+	combo_label.visible = combo_time > 0 and (not feedback or feedback.banner_time <= 0)
 	manual = false
 	var pads = Input.get_connected_joypads()
 	if not pads.is_empty():
@@ -121,7 +106,6 @@ func _physics_process(delta):
 		if crown_timer <= 0:
 			fire(crown)
 			crown_timer = crown.cooldown * player.stats.attack_speed
-	readout.text = "%s\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nUnlock weapons at level-up. Return crown to a settled die." % [" + ".join(equipped_names()), "MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
 	queue_redraw()
 
 func fire(spec: Resource):
@@ -143,18 +127,20 @@ func fire(spec: Resource):
 	play_tone(spec.kind)
 
 func play_tone(kind: String):
-	if muted or (sound_cooldown > 0 and kind != "combo"):
+	if muted:
 		return
-	audio.stream = tones[kind]
-	audio.play()
-	sound_cooldown = 0.08
+	var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+	if feedback:
+		feedback.sound("crumble" if kind == "combo" else kind)
 
 func celebrate_combo(chain: int):
 	var run = get_tree().current_scene.get_node_or_null("RunDirector")
 	if run:
 		run.discover("Royal Crumble",chain)
 	combo_count += 1
-	combo_time = 1.3
+	if chain < 2:
+		return
+	combo_time = 0.9
 	combo_label.text = "ROYAL CRUMBLE!  ×%d" % chain
 	play_tone("combo")
 
@@ -176,15 +162,14 @@ func fire_dice():
 	die.damage = player.stats.attack_power
 	get_tree().current_scene.add_child(die)
 	die.global_position = player.global_position + aim * 35
-	play_tone("biscuit")
+	play_tone("throw_die")
 
 func celebrate_wager():
-	combo_time = 1.3
-	combo_label.text = "ROYAL WAGER!  Guaranteed six"
+	combo_time = 0.0 # The actual die owns its readable six reveal.
 	var run = get_tree().current_scene.get_node_or_null("RunDirector")
 	if run:
 		run.discover("Royal Wager",1)
-	play_tone("combo")
+	play_tone("clack")
 
 func equipped_names() -> Array[String]:
 	var names: Array[String] = ["Returning Crown"]

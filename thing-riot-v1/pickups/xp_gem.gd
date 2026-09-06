@@ -18,6 +18,9 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if not collected and body.is_in_group("Player") and not body.dead:
 		collected = true
+		var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+		if feedback:
+			feedback.sound("pickup")
 		body.add_xp(xp_value)
 		queue_free()
 
