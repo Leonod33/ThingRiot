@@ -58,7 +58,7 @@ func _physics_process(delta):
 		var target = overlap.collider
 		if not target.is_in_group("enemies"):
 			target = target.get_parent()
-			if not target or not target.is_in_group("destructible"):
+			if not target or not (target.is_in_group("destructible") or target.is_in_group("loaded_dice")):
 				continue
 		var id = target.get_instance_id()
 		if target.is_queued_for_deletion() or hits.has(id) or candidates.has(target):
@@ -90,6 +90,10 @@ func begin_return():
 
 func strike(target: Node2D):
 	if finished or hits.has(target.get_instance_id()):
+		return
+	if target.is_in_group("loaded_dice"):
+		if spec.kind == "crown":
+			target.cash_out(true)
 		return
 	hits[target.get_instance_id()] = true
 	var coated: bool = target.is_in_group("enemies") and target.crumb_time > 0

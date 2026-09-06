@@ -19,6 +19,7 @@ func run():
 	change_scene_to_file("res://main.tscn")
 	await process_frame
 	await process_frame
+	current_scene.get_node("RunDirector").set_process(false)
 	var p = current_scene.get_node("Player")
 	p.set_physics_process(false)
 	p.invincible_timer = 100

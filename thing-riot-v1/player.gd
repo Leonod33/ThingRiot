@@ -106,8 +106,11 @@ func die():
 		return
 	dead = true
 	get_tree().paused = false
-	# Collision callbacks must finish before replacing the scene.
-	get_tree().change_scene_to_file.call_deferred("res://GameOverScreen.tscn")
+	var director = get_tree().current_scene.get_node_or_null("RunDirector")
+	if director:
+		director.finish(false)
+	else:
+		get_tree().change_scene_to_file.call_deferred("res://GameOverScreen.tscn")
 
 func _physics_process(delta):
 	var input_vector = Vector2.ZERO

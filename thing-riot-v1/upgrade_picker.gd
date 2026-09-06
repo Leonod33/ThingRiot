@@ -38,6 +38,8 @@ func _unhandled_input(event: InputEvent) -> void:
 # Each entry: id, title, desc, apply(player)
 func _pool() -> Array:
 	return [
+		{"id":"dice_radius", "title":"High Roller", "desc":"+20% Dice Blast Radius", "apply":Callable(self,"_apply_dice_radius")},
+		{"id":"dice_rate", "title":"Another Throw", "desc":"15% Faster Dice (max 50%)", "apply":Callable(self,"_apply_dice_rate")},
 		{"id": "crumb_radius", "title": "Family Biscuit", "desc": "+20% Crumb Patch Radius", "apply": Callable(self, "_apply_crumb_radius")},
 		{"id": "crumb_life", "title": "Stale but Deadly", "desc": "+2 Seconds Crumb Duration", "apply": Callable(self, "_apply_crumb_life")},
 		{"id": "royal_chain", "title": "Royal Crumble", "desc": "+1 Ricochet (max 5)", "apply": Callable(self, "_apply_royal_chain")},
@@ -168,12 +170,17 @@ func _choose(index: int) -> void:
 		return
 	var choice : Dictionary = current_choices[index]
 	(choice["apply"] as Callable).call(player)
+	var director = get_tree().current_scene.get_node_or_null("RunDirector")
+	if director:
+		director.record_upgrade(choice["title"])
 	hide()
 	current_choices.clear()
 	emit_signal("upgrade_picked", choice["id"])
 
 func _is_available(id: String) -> bool:
 	match id:
+		"dice_radius": return player.get_node("Weapons").dice.patch_radius < 219.99
+		"dice_rate": return player.get_node("Weapons").dice.cooldown > 1.20001
 		"crumb_radius": return player.get_node("Weapons").biscuit.patch_radius < 239.99
 		"crumb_life": return player.get_node("Weapons").biscuit.patch_lifetime < 12.0
 		"royal_chain": return player.get_node("Weapons").crown.bounce_limit < 5
@@ -191,3 +198,9 @@ func _apply_crumb_life(p):
 
 func _apply_royal_chain(p):
 	p.get_node("Weapons").crown.bounce_limit = mini(5, p.get_node("Weapons").crown.bounce_limit + 1)
+
+func _apply_dice_radius(p):
+	p.get_node("Weapons").dice.patch_radius = minf(220.0,p.get_node("Weapons").dice.patch_radius*1.2)
+
+func _apply_dice_rate(p):
+	p.get_node("Weapons").dice.cooldown = maxf(1.2,p.get_node("Weapons").dice.cooldown*0.85)

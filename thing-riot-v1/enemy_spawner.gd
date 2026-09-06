@@ -33,14 +33,27 @@ func _process(delta: float) -> void:
 		_player = get_tree().get_first_node_in_group("Player")
 		return
 
-	_t = clamp(_t + delta, 0.0, ramp_seconds)
-	var diff : float = _t / ramp_seconds            # 0..1
-	var interval : float = lerp(spawn_interval_max, spawn_interval_min, diff)
-	_timer -= delta
-
-	if _timer <= 0.0:
-		_spawn_enemy_batch(diff)
-		_timer = interval
+	var run = get_parent().get_node_or_null("RunDirector")
+	if run:
+		if run.ended or run.boss_started:
+			return
+		_t = run.elapsed
+		if run.is_break():
+			_timer = minf(_timer,0.5)
+			return
+		var wave: int = run.wave_index()
+		_timer -= delta
+		if _timer <= 0:
+			for i in range(1 if wave == 0 else (2 if wave < 3 else 3)):
+				_spawn_one_enemy()
+			_timer = [1.9,1.25,1.05,0.8,0.65,0.5,0.4][wave]
+	else:
+		_t = clamp(_t + delta, 0.0, ramp_seconds)
+		var diff: float = _t / ramp_seconds
+		_timer -= delta
+		if _timer <= 0:
+			_spawn_enemy_batch(diff)
+			_timer = lerp(spawn_interval_max,spawn_interval_min,diff)
 
 func _offscreen_radius() -> float:
 	var cam := get_viewport().get_camera_2d()
@@ -65,9 +78,9 @@ func _spawn_one_enemy() -> void:
 		return
 	var e := enemy_scene.instantiate()
 	spawned_total += 1
-	if _t >= 20.0 and spawned_total % 3 == 0:
+	if _t >= 60.0 and spawned_total % 3 == 0:
 		e.set_script(preload("res://arena/tactical_enemy.gd"))
-		e.kind = "caster" if _t >= 40.0 and spawned_total % 2 == 0 else "charger"
+		e.kind = "caster" if _t >= 120.0 and spawned_total % 2 == 0 else "charger"
 	get_tree().current_scene.add_child(e)
 	e.global_position = _ring_spawn_position()
 

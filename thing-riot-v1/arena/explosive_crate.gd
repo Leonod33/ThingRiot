@@ -3,6 +3,7 @@ var armed := false
 var fuse := 0.55
 var blast_radius := 170.0
 var exploded := false
+var chain_depth := 1
 func _ready():
 	super._ready()
 	$Sprite2D.hide()
@@ -24,11 +25,18 @@ func detonate():
 	if exploded:
 		return
 	exploded = true
+	var run = get_tree().current_scene.get_node_or_null("RunDirector")
+	if run:
+		run.biggest_chain = maxi(run.biggest_chain,chain_depth)
 	for group in ["enemies", "destructible"]:
 		for target in get_tree().get_nodes_in_group(group):
 			if target == self or target.is_queued_for_deletion():
 				continue
 			if global_position.distance_to(target.global_position) <= blast_radius:
+				if target.get("chain_depth") != null and not target.armed:
+					if chain_depth >= 6:
+						continue
+					target.chain_depth = chain_depth + 1
 				target.take_damage(6)
 	# Friendly explosions reward positioning without surprise player damage.
 	var fx = preload("res://arena/blast_visual.gd").new()
