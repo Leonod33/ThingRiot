@@ -18,6 +18,13 @@ func shape(points: Array, colour: Color):
 	poly.append(poly[0])
 	draw_polyline(poly, INK, 2.0, true)
 func _draw():
+	var shield: float = get_parent().invincible_timer
+	if shield > 0:
+		draw_arc(Vector2(0,-17),36,-PI/2,-PI/2+TAU*shield/1.6,40,Color("c5edff"),3.0,true)
+		draw_arc(Vector2(0,-17),40,0,TAU,40,Color(0.7,0.9,1,0.3),1.0,true)
+		for i in range(4):
+			var tip := Vector2(0,-17)+Vector2.from_angle(PI/4+i*PI/2)*43
+			draw_line(tip-Vector2(3,0),tip+Vector2(3,0),Color.WHITE,2)
 	draw_set_transform(Vector2(0,4), 0, Vector2(1,0.3))
 	draw_circle(Vector2.ZERO, 20, Color(0.05,0.08,0.12,0.3))
 	var bob := sin(phase * 2) * walking * 1.5

@@ -1,6 +1,7 @@
 extends Control
 var summary := {}
 func _ready():
+	theme = preload("res://polish/royal_theme.gd").make()
 	$VBoxContainer.hide()
 	var result = get_tree().get_meta("riot_result", {})
 	summary = result
@@ -22,7 +23,7 @@ func _ready():
 	add_label(column, "The Bureaucrab has been overruled." if result.get("victory",false) else "Another reign awaits. Try a different royal recipe.",22)
 	var seconds: int = int(result.get("elapsed",0))
 	add_label(column,"%02d:%02d survived  •  Level %d  •  %d foes defeated" % [seconds/60,seconds%60,result.get("level",1),result.get("kills",0)],24)
-	add_label(column,"Crown  +  Biscuit Blaster  +  Loaded Dice\nPower %d  •  Crowns %d  •  Armour %d%%" % [result.get("power",1),result.get("crowns",1),int(result.get("defense",0)*100)],22)
+	add_label(column,"%s\nPower %d  •  Crowns %d  •  Armour %d%%" % ["  +  ".join(result.get("weapons",["Returning Crown"])),result.get("power",1),result.get("crowns",1),int(result.get("defense",0)*100)],22)
 	var combos: Array = result.get("combos",[])
 	add_label(column,"Combinations discovered: %d / 2\n%s\nBiggest chain: %d links" % [combos.size(),", ".join(combos) if not combos.is_empty() else "None yet — combine crowns with crumbs or dice!",result.get("chain",0)],22)
 	var scroll = ScrollContainer.new()

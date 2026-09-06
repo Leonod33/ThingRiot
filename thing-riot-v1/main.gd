@@ -12,6 +12,10 @@ func _ready() -> void:
 	run = preload("res://run/run_director.gd").new()
 	run.name = "RunDirector"
 	add_child(run)
+	var feedback = preload("res://polish/feedback.gd").new()
+	feedback.name = "Feedback"
+	add_child(feedback)
+	pause_panel.theme = preload("res://polish/royal_theme.gd").make()
 	# You already refresh the pause panel on stat changes:
 	player.level_up.connect(_on_player_stats_changed)
 	player.xp_changed.connect(_on_player_stats_changed)

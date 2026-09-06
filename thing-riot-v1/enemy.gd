@@ -4,6 +4,7 @@ extends CharacterBody2D
 @export var damage := 1
 @export var hp := 2
 
+var basic_art := true
 var player = null
 var dead := false
 var crumb_time := 0.0
@@ -12,6 +13,7 @@ var knockback_velocity := Vector2.ZERO
 
 func _ready():
 	z_index = 1
+	$Sprite2D.hide()
 		# Find player node once at start (adjust path if needed)
 	add_to_group("enemies")
 	player = get_node("/root/Main/Player")
@@ -65,7 +67,8 @@ func take_damage(amount):
 
 func apply_knockback(from_position: Vector2, strength: float) -> void:
 	if not dead:
-		knockback_velocity = (global_position - from_position).normalized() * strength
+		var away := global_position - from_position
+		knockback_velocity = (away.normalized() if away.length_squared() > 0.01 else Vector2.RIGHT) * strength
 
 func _spawn_xp_gem(pos: Vector2) -> void:
 	var gem := preload("res://pickups/XPGem.tscn").instantiate()
@@ -79,6 +82,21 @@ func _on_damage_area_body_entered(body):
 		global_position += push_dir * 20
 
 func _draw():
+	if basic_art:
+		draw_set_transform(Vector2(0,10),0,Vector2(1,0.3))
+		draw_circle(Vector2.ZERO,15,Color(0.03,0.04,0.08,0.35))
+		draw_set_transform(Vector2.ZERO)
+		draw_circle(Vector2.ZERO,13,Color("20283b"))
+		draw_circle(Vector2(0,-1),11,Color.WHITE if flash_time > 0 else Color("739ba8"))
+		for x in [-7,0,7]:
+			draw_circle(Vector2(x,7),4,Color("739ba8"))
+		draw_arc(Vector2(0,-1),9,PI,PI*1.6,12,Color("bbd9db"),2,true)
+		for x in [-4,4]:
+			draw_circle(Vector2(x,-2),3,Color("f4ecd2"))
+			draw_circle(Vector2(x,-1),1.4,Color("20283b"))
+		draw_arc(Vector2(0,2),3,0,PI,8,Color("20283b"),1.4)
+		draw_line(Vector2(-5,-10),Vector2(-2,-15),Color("20283b"),3)
+		draw_line(Vector2(-2,-15),Vector2(5,-13),Color("e9be72"),3)
 	if crumb_time > 0:
 		draw_arc(Vector2.ZERO, 17, 0, TAU, 24, Color("ffe0a0"), 1.5)
 		for i in range(5):

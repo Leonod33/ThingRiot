@@ -6,6 +6,7 @@ var _player: Node2D
 var collected := false
 
 func _ready() -> void:
+	$Sprite2D.hide()
 	# Your Player group is "Player" (capital P)
 	_player = get_tree().get_first_node_in_group("Player")
 
@@ -19,3 +20,8 @@ func _on_body_entered(body: Node) -> void:
 		collected = true
 		body.add_xp(xp_value)
 		queue_free()
+
+func _draw():
+	draw_colored_polygon(PackedVector2Array([Vector2(0,-4),Vector2(3,0),Vector2(0,4),Vector2(-3,0)]),Color("1b3148"))
+	draw_colored_polygon(PackedVector2Array([Vector2(0,-3),Vector2(2,0),Vector2(0,3),Vector2(-2,0)]),Color("80d7ec"))
+	draw_line(Vector2(0,-2),Vector2(-1,0),Color.WHITE,0.6,true)

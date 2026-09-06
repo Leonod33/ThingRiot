@@ -100,6 +100,7 @@ func finish(victory: bool):
 		build.append("%s ×%d" % [title,upgrades[title]])
 	build.sort()
 	get_tree().set_meta("riot_result", {
+		"weapons":p.get_node("Weapons").equipped_names(),
 		"victory":victory, "elapsed":elapsed, "level":p.level,
 		"kills":kills + (1 if victory else 0), "chain":biggest_chain,
 		"combos":combinations.keys(), "build":build,

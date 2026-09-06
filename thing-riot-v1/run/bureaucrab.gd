@@ -4,6 +4,7 @@ var attack_timer := 2.5
 var attacks := 0
 var director: Node
 func _ready():
+	basic_art = false
 	super._ready()
 	add_to_group("boss")
 	$Sprite2D.hide()

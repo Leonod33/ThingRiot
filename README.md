@@ -1,5 +1,7 @@
 # Thing Riot: A Surreal Survivors Game
 
+**Current build:** one arena, the King, three unlockable weapons and an eight-minute-target run ending with the Bureaucrab. The Step 5 section below describes current controls and weapon behaviour; older sections record previous milestones.
+
 Inspired by “Vampire Survivors” but with a surreal, whimsical twist!
 
 ## Premise
@@ -175,3 +177,36 @@ godot --path thing-riot-v1 --script res://tests/run_visual.gd
 The isolated visual fixture captures `step4-boss.png` and `step4-results.png` in Godot's user-data folder. Its frozen warnings and staged summary are for inspection only. Both renders were inspected with software OpenGL. Full human run balance, physical-controller playtesting, music and the remaining Step 5 polish are still to follow.
 
 A headless stress run with Loaded Dice active retained 180 enemies and 40 royal projectiles, measuring 5.532 ms median wall-frame time and 7.659 ms p95 on the development machine. These offline timings are not a guarantee of displayed FPS on other hardware.
+
+
+## Step 5: Royal polish and readable dice
+
+Runs now start with **Returning Crown only**. Every level-up offers each still-locked weapon, alongside remaining stat choices. Choosing Biscuit Blaster or Loaded Dice equips it for this run; upgrades specific to an unowned weapon cannot appear. Results list the weapons actually equipped, and restarting resets unlocks.
+
+### Loaded Dice redesign
+
+- Dice roll out to 280 pixels before settling (at least 0.75 seconds). Rolling dice ignore all projectile contact.
+- A settled die displays its actual face, a countdown, face-counted halo segments and blast outline. It naturally explodes after two seconds. Higher faces increase both damage and radius.
+- Only a **returning crown** cashes in a settled die. Outward crowns and biscuits pass through. Royal Wager changes the actual face to six, enlarges the die and blast, and displays **ROYAL SIX!** for 0.55 seconds before exploding.
+- Blasts show the rolled value and actual damage bonus calculation. Damage is attack power + face value. Radius is `110 × (0.55 + 0.12 × face)` before radius upgrades; Royal Six adds a further 20%. Neither ordinary nor royal dice recursively trigger other dice.
+
+### Feel, presentation and audio
+
+An accepted hit gives 1.6 seconds of immunity, a visible shield countdown, a brief HIT message and warm flash. It pushes nearby enemies away and gives 0.7 seconds of 30% faster movement; the King's own hit knockback is reduced. Movement is still immediately responsive to input.
+
+The illustrated title menu, upgrade cards, pause and results share a navy-and-gold theme. Basic enemies, wooden crates and XP gems have new native vector artwork. Existing tactical-enemy and Bureaucrab silhouettes remain distinct. Decorative hit bursts, bomb rings and dice feedback have separate caps (32/16/8), preserving important dice information during busy fights.
+
+The title menu offers **Music**, **Sound**, **Shake** (off by default) and **Impact pause**. Options persist across restarts and return-to-title within the current app session. M toggles sound effects during play; music has its own menu toggle. Original, quiet synthesized music changes at three minutes and the boss entrance; hit, unlock and Royal Six sounds add distinct cues. The optional hit pause lasts 45 milliseconds of real time and restores normal speed even if an upgrade pauses the game.
+
+### Focused verification for this patch
+
+`git diff --check` and local resource-path checks passed. **Godot execution and rendered QA were not completed for this patch:** the previous temporary runtime was unavailable and downloading its replacement was blocked. The earlier 112-check result above applies to Step 4, not this change. Broad control testing was intentionally left for human playtesting.
+
+A focused fixture is supplied for unlock choices/reset, safe rolling, projectile eligibility, face-scaled radius, delayed guaranteed-six damage, overlapping hits, crowd pushback and impact-pause restoration:
+
+```sh
+godot --headless --editor --path thing-riot-v1 --import
+godot --headless --path thing-riot-v1 --script res://tests/polish_test.gd
+```
+
+The existing run fixture was updated for the new settle/reveal timing. Before treating this draft as release-ready, import it in Godot 4.3 and try a crown-only opening, unlock both weapons, watch a returning crown cash a settled die, and take a hit inside a crowd. Music taste/volume, escape balance and a full run still need a human pass.

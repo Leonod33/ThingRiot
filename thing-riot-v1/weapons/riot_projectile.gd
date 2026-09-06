@@ -92,7 +92,7 @@ func strike(target: Node2D):
 	if finished or hits.has(target.get_instance_id()):
 		return
 	if target.is_in_group("loaded_dice"):
-		if spec.kind == "crown":
+		if spec.kind == "crown" and returning and target.can_cash_out():
 			target.cash_out(true)
 		return
 	hits[target.get_instance_id()] = true

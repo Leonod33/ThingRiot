@@ -13,6 +13,7 @@ var current_choices: Array = []
 @onready var btn_c: Button = %OptC
 
 func _ready() -> void:
+	theme = preload("res://polish/royal_theme.gd").make()
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	visible = false
 	exclusive = true
@@ -38,6 +39,8 @@ func _unhandled_input(event: InputEvent) -> void:
 # Each entry: id, title, desc, apply(player)
 func _pool() -> Array:
 	return [
+		{"id":"unlock_biscuit", "title":"NEW • Biscuit Blaster", "desc":"Slowing crumbs + crown ricochets", "apply":Callable(self,"_unlock_biscuit")},
+		{"id":"unlock_dice", "title":"NEW • Loaded Dice", "desc":"Roll. Settle. Return crown for six!", "apply":Callable(self,"_unlock_dice")},
 		{"id":"dice_radius", "title":"High Roller", "desc":"+20% Dice Blast Radius", "apply":Callable(self,"_apply_dice_radius")},
 		{"id":"dice_rate", "title":"Another Throw", "desc":"15% Faster Dice (max 50%)", "apply":Callable(self,"_apply_dice_rate")},
 		{"id": "crumb_radius", "title": "Family Biscuit", "desc": "+20% Crumb Patch Radius", "apply": Callable(self, "_apply_crumb_radius")},
@@ -151,19 +154,31 @@ func open_for(player_ref: Node) -> void:
 	# pick 3 unique choices
 	var pool := _pool().filter(func(choice): return _is_available(choice["id"]))
 	pool.shuffle()
-	current_choices = pool.slice(0, 3)
+	var unlocks = pool.filter(func(choice): return choice["id"].begins_with("unlock_"))
+	var upgrades = pool.filter(func(choice): return not choice["id"].begins_with("unlock_"))
+	current_choices = unlocks + upgrades.slice(0,3-unlocks.size())
 	# Fill buttons
 	_set_button(btn_a, current_choices[0])
 	_set_button(btn_b, current_choices[1])
 	_set_button(btn_c, current_choices[2])
-	popup_centered()
+	get_node("Center").set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	popup_centered(Vector2i(1040,260))
 	btn_a.grab_focus()
 
 func _set_button(btn: Button, choice: Dictionary) -> void:
-	btn.text = "%s\n[ %s ]" % [choice["title"], choice["desc"]]
+	var lines := ""
+	var width := 0
+	for word in str(choice["desc"]).split(" "):
+		if width + word.length() > 27:
+			lines += "\n"
+			width = 0
+		lines += word + " "
+		width += word.length()+1
+	btn.text = "%s\n\n%s" % [choice["title"],lines.strip_edges()]
+	btn.add_theme_font_size_override("font_size",17)
 	btn.focus_mode = Control.FOCUS_ALL
 	# (Optional) wider buttons:
-	btn.custom_minimum_size = Vector2(260, 0)
+	btn.custom_minimum_size = Vector2(320, 126)
 
 func _choose(index: int) -> void:
 	if not visible or player == null or index < 0 or index >= current_choices.size():
@@ -178,7 +193,14 @@ func _choose(index: int) -> void:
 	emit_signal("upgrade_picked", choice["id"])
 
 func _is_available(id: String) -> bool:
+	var weapons = player.get_node("Weapons")
+	if id in ["dice_radius","dice_rate"] and not weapons.equipped.dice:
+		return false
+	if id in ["crumb_radius","crumb_life","royal_chain"] and not weapons.equipped.biscuit:
+		return false
 	match id:
+		"unlock_biscuit": return not weapons.equipped.biscuit
+		"unlock_dice": return not weapons.equipped.dice
 		"dice_radius": return player.get_node("Weapons").dice.patch_radius < 219.99
 		"dice_rate": return player.get_node("Weapons").dice.cooldown > 1.20001
 		"crumb_radius": return player.get_node("Weapons").biscuit.patch_radius < 239.99
@@ -204,3 +226,9 @@ func _apply_dice_radius(p):
 
 func _apply_dice_rate(p):
 	p.get_node("Weapons").dice.cooldown = maxf(1.2,p.get_node("Weapons").dice.cooldown*0.85)
+
+func _unlock_biscuit(p):
+	p.get_node("Weapons").unlock("biscuit")
+
+func _unlock_dice(p):
+	p.get_node("Weapons").unlock("dice")
