@@ -20,17 +20,25 @@ func _ready():
 		# Area2D to detect the player.
 	collision_layer = 2
 	collision_mask = 1
-	$DamageArea.collision_layer = 2
+	$DamageArea.collision_layer = 0
+	$DamageArea.monitorable = false
 	$DamageArea.collision_mask = 1
 
 func coat_with_crumbs():
+	if crumb_time <= 0:
+		queue_redraw()
 	crumb_time = 2.0
 
 func _physics_process(delta):
+	var was_coated := crumb_time > 0
+	var was_flashing := flash_time > 0
 	crumb_time = maxf(0.0, crumb_time - delta)
 	flash_time = maxf(0.0, flash_time - delta)
-	$Sprite2D.modulate = Color(3,3,3) if flash_time > 0 else Color.WHITE
-	queue_redraw()
+	if was_flashing != (flash_time > 0):
+		$Sprite2D.modulate = Color(3,3,3) if flash_time > 0 else Color.WHITE
+		queue_redraw()
+	if was_coated != (crumb_time > 0):
+		queue_redraw()
 	if is_instance_valid(player) and not dead:
 		var dir = (player.position - position).normalized()
 		velocity = _desired_velocity(delta, dir) + knockback_velocity
@@ -44,6 +52,8 @@ func take_damage(amount):
 	if dead or amount <= 0:
 		return
 	flash_time = 0.08
+	$Sprite2D.modulate = Color(3,3,3)
+	queue_redraw()
 	hp -= amount
 	if hp <= 0:
 		dead = true

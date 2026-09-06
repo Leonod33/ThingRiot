@@ -81,6 +81,9 @@ func run_tests():
 	biscuit.burst()
 	check(get_nodes_in_group("crumb_patches").size() == 1, "biscuit leaves one patch")
 	var patch = get_nodes_in_group("crumb_patches")[0]
+	await physics_frame
+	await physics_frame
+	await physics_frame
 	targets[1].crumb_time = 0
 	patch._physics_process(0.1)
 	check(targets[1].crumb_time > 0, "patch coats enemies")

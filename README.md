@@ -102,3 +102,31 @@ godot --headless --path thing-riot-v1 --script res://tests/arena_test.gd
 ```
 
 Run this alongside the core and weapon suites (69 checks total). For rendered inspection, `godot --path thing-riot-v1 --script res://tests/arena_visual.gd` captures gameplay and an enlarged King portrait in the Godot user-data directory. Its frozen attack warnings and enlarged portrait are confined to the fixture. Difficulty and controller feel still need human playtesting.
+
+
+## Step 4 performance pass
+
+This patch addresses crowded-fight stutter reported after Step 3. It is the performance portion of the next milestone; Loaded Dice, further combinations and the Bureaucrab/run progression remain future work.
+
+- Weapon projectiles query nearby physics shapes before performing their exact swept hit checks. Dense sweeps retain all contacts, and biscuits choose the nearest target along the sweep.
+- Spring pads and crumb patches use physics-maintained overlap lists instead of scanning every enemy across the arena. New overlaps become available after physics synchronisation.
+- Enemy damage sensors no longer appear as duplicate weapon targets. Crate hurtboxes remain queryable without monitoring nearby bodies.
+- Enemy artwork redraws when its state changes; warning rings still animate. Idle bomb crates stop processing, and hostile bolts cache the player reference and their unchanged drawing.
+- Press **F3** during gameplay to toggle FPS, physics time and enemy/projectile counts. Counters refresh twice per second while visible.
+
+### Validation and performance
+
+The previous development session passed all 78 checks: core (34), weapons (16), arena (19), and collision queries (9). The collision suite includes a 141-enemy sweep, crate detection, per-pass hit guards and nearest-target selection.
+
+```sh
+godot --headless --editor --path thing-riot-v1 --import
+godot --headless --path thing-riot-v1 --script res://tests/core_loop_test.gd
+godot --headless --path thing-riot-v1 --script res://tests/weapon_test.gd
+godot --headless --path thing-riot-v1 --script res://tests/arena_test.gd
+godot --headless --path thing-riot-v1 --script res://tests/collision_query_test.gd
+godot --headless --fixed-fps 60 --path thing-riot-v1 --script res://tests/combat_benchmark.gd
+```
+
+Use Godot 4.3 and the same machine/settings for comparisons. The benchmark creates 180 durable enemies (120 casters), 24 initial crumb patches and boosted weapon fire in an isolated fixture. It samples wall-frame time and script callback time after warmup. Script timing excludes physics-server work outside those callbacks. `--fixed-fps 60` fixes simulation steps; these are offline timings, not displayed FPS.
+
+One recorded headless comparison against Step 3 reduced median wall-frame time from 24.504 to 6.390 ms, and p95 from 53.767 to 11.855 ms. Script callback medians were 18.145 and 2.897 ms. Both runs used the same temporary two-worker setting; that setting is not shipped. These results are preliminary and hardware-dependent. Rendered stress validation was not completed, so Windows/controller playtesting remains necessary. Try F3 during a crowded fight and report FPS plus enemy/shot counts if stutter remains.

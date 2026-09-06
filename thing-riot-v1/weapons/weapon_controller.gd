@@ -15,6 +15,8 @@ var readout: Label
 var combo_label: Label
 var audio: AudioStreamPlayer
 var tones := {}
+var performance_label: Label
+var performance_timer := 0.0
 
 func _ready():
 	player = get_parent()
@@ -41,13 +43,32 @@ func _ready():
 	readout.position = Vector2(16, 125)
 	readout.add_theme_font_size_override("font_size", 16)
 	ui.add_child(readout)
+	performance_label = Label.new()
+	performance_label.position = Vector2(930, 16)
+	performance_label.add_theme_font_size_override("font_size", 16)
+	performance_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	performance_label.add_theme_constant_override("shadow_offset_x", 1)
+	performance_label.add_theme_constant_override("shadow_offset_y", 1)
+	performance_label.hide()
+	ui.add_child(performance_label)
 	combo_label = Label.new()
 	combo_label.position = Vector2(16, 242)
 	combo_label.add_theme_font_size_override("font_size", 24)
 	combo_label.add_theme_color_override("font_color", Color("ffe090"))
 	ui.add_child(combo_label)
 
+func _process(delta):
+	if not performance_label.visible:
+		return
+	performance_timer -= delta
+	if performance_timer <= 0:
+		performance_timer = 0.5
+		performance_label.text = "FPS: %d | physics: %.1f ms\nEnemies: %d | hostile shots: %d\nRoyal shots: %d | crumb patches: %d\nF3: hide performance" % [Engine.get_frames_per_second(), Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000, get_tree().get_nodes_in_group("enemies").size(), get_tree().get_nodes_in_group("enemy_bolts").size(), get_tree().get_nodes_in_group("riot_projectiles").size(), get_tree().get_nodes_in_group("crumb_patches").size()]
+
 func _unhandled_input(event):
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F3:
+		performance_label.visible = not performance_label.visible
+		performance_timer = 0.0
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_M:
 		muted = not muted
 		if muted:

@@ -18,10 +18,16 @@ var bounce_count := 0
 var bounce_target: Node2D
 var trail: Array[Vector2] = []
 var finished := false
+var sweep_shape := RectangleShape2D.new()
+var sweep_query := PhysicsShapeQueryParameters2D.new()
 
 func _ready():
 	add_to_group("riot_projectiles")
 	z_index = 5
+	sweep_query.shape = sweep_shape
+	sweep_query.collision_mask = 2
+	sweep_query.collide_with_areas = true
+	sweep_query.collide_with_bodies = true
 
 func _physics_process(delta):
 	if finished:
@@ -41,16 +47,32 @@ func _physics_process(delta):
 	trail.push_front(global_position)
 	if trail.size() > 9:
 		trail.pop_back()
-	# Sweep the segment so fast shots cannot skip an enemy between frames.
-	for group in ["enemies", "destructible"]:
-		for target in get_tree().get_nodes_in_group(group):
-			if target.is_queued_for_deletion() or hits.has(target.get_instance_id()):
+	# Ask the physics broad phase for nearby candidates, then retain the exact
+	# swept centre-distance rule. The reusable query avoids per-shot allocations.
+	var hit_radius := 25 + 12 * size_mult
+	var sweep_bounds := Rect2(before, Vector2.ZERO).expand(global_position).grow(hit_radius)
+	sweep_shape.size = sweep_bounds.size
+	sweep_query.transform = Transform2D(0, sweep_bounds.get_center())
+	var candidates := {}
+	for overlap in get_world_2d().direct_space_state.intersect_shape(sweep_query, 1024):
+		var target = overlap.collider
+		if not target.is_in_group("enemies"):
+			target = target.get_parent()
+			if not target or not target.is_in_group("destructible"):
 				continue
-			var nearest = Geometry2D.get_closest_point_to_segment(target.global_position, before, global_position)
-			if nearest.distance_to(target.global_position) <= 25 + 12 * size_mult:
-				strike(target)
-				if finished:
-					return
+		var id = target.get_instance_id()
+		if target.is_queued_for_deletion() or hits.has(id) or candidates.has(target):
+			continue
+		var nearest = Geometry2D.get_closest_point_to_segment(target.global_position, before, global_position)
+		if nearest.distance_squared_to(target.global_position) <= hit_radius * hit_radius:
+			candidates[target] = before.distance_squared_to(nearest)
+	# Biscuits stop at the first target along the sweep, regardless of tree order.
+	var ordered = candidates.keys()
+	ordered.sort_custom(func(a, b): return candidates[a] < candidates[b])
+	for target in ordered:
+		strike(target)
+		if finished:
+			return
 	if spec.kind == "biscuit" and travelled >= reach:
 		burst()
 	elif spec.kind == "crown":

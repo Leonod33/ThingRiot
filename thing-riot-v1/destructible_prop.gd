@@ -10,6 +10,9 @@ var destroyed := false
 
 func _ready() -> void:
 	_hp = max_health
+	# Hurtboxes are query targets, not proximity sensors.
+	$HurtBox.monitoring = false
+	$HurtBox.monitorable = false
 	if not is_in_group("destructible"):
 		add_to_group("destructible")
 	# If you want the Hurtbox to relay body/area_entered to this node,

@@ -6,11 +6,14 @@ var exploded := false
 func _ready():
 	super._ready()
 	$Sprite2D.hide()
+	set_physics_process(false)
 func _die():
 	if armed or exploded:
 		return
 	destroyed = true
 	armed = true
+	set_physics_process(true)
+	queue_redraw()
 func _physics_process(delta):
 	if armed and not exploded:
 		fuse -= delta

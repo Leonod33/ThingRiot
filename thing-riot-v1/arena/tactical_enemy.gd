@@ -11,6 +11,9 @@ func _ready():
 	hp = 5 if kind == "charger" else 4
 	speed = 115
 func _desired_velocity(delta: float, dir: Vector2) -> Vector2:
+	# Only the warning ring changes continuously; the body drawing is cached.
+	if state == "windup":
+		queue_redraw()
 	clock -= delta
 	var distance := global_position.distance_to(player.global_position)
 	match state:
@@ -36,6 +39,7 @@ func _desired_velocity(delta: float, dir: Vector2) -> Vector2:
 			return Vector2.ZERO
 	if distance < (420 if kind == "caster" else 310) and clock <= 0:
 		state = "windup"
+		queue_redraw()
 		clock = 1.0
 		attack_direction = dir
 		windup_count += 1

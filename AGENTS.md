@@ -97,3 +97,7 @@ Document any changes or additions below.
 - `characters/king_visual.gd` provides original animated vector artwork. Player collision is a 14-pixel circle at the feet, independent of portrait proportions.
 - Production spawning includes a deliberate introductory bomb pair and spring pad; the rest remains spread across the arena. Screenshot-only actors stay in `tests/arena_visual.gd`.
 - Combat regression gate now includes `tests/arena_test.gd` alongside the core and weapon suites (34 + 16 + 19 checks). Rendered QA can use `tests/arena_visual.gd`.
+
+- Step 4 performance pass: projectiles use reusable broad-phase shape queries on collision layer 2, followed by exact swept centre-distance checks and ordered contacts. Enemy bodies and crate HurtBoxes supply query geometry; damage sensors use layer 0 and only monitor the player/map layer.
+- Bumpers and crumb patches use Area2D body overlaps. Tests must allow physics synchronisation after spawning/moving sensor fixtures. Redraw static artwork only on state changes; retain continuous attack telegraphs.
+- Combat regression gate includes `tests/collision_query_test.gd` (78 checks across all four suites). `tests/combat_benchmark.gd` requires `--fixed-fps 60` for comparable offline samples. F3 displays sampled performance counters during play. Do not replace population/behaviour with benchmark fixture settings in production.
