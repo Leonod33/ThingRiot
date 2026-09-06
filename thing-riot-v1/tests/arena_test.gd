@@ -46,6 +46,8 @@ func run_tests():
 	b.detonate()
 	check(near.hp == 8, "second crate completes bounded chain")
 	var bumper = spawner.spawn_bumper(p.global_position - Vector2(10,0))
+	await physics_frame
+	await physics_frame
 	bumper._physics_process(0.01)
 	check(p.knockback_vector.x > 0 and bumper.bounce_count == 1, "bumper launches king away")
 	bumper._physics_process(0.01)

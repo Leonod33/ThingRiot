@@ -2,21 +2,35 @@ extends Node2D
 var cooldowns := {}
 var pulse := 0.0
 var bounce_count := 0
+var sensor: Area2D
 func _ready():
 	add_to_group("bumpers")
+	sensor = Area2D.new()
+	sensor.collision_layer = 0
+	sensor.monitorable = false
+	sensor.collision_mask = 3
+	var shape = CollisionShape2D.new()
+	shape.shape = CircleShape2D.new()
+	shape.shape.radius = 42
+	sensor.add_child(shape)
+	add_child(sensor)
 func _physics_process(delta):
 	pulse = maxf(0,pulse-delta)
 	for id in cooldowns.keys():
 		cooldowns[id] -= delta
 		if cooldowns[id] <= 0:
 			cooldowns.erase(id)
-	for group in ["Player","enemies"]:
-		for body in get_tree().get_nodes_in_group(group):
-			if body.dead or body.is_queued_for_deletion() or cooldowns.has(body.get_instance_id()):
-				continue
-			if global_position.distance_to(body.global_position) < 42:
-				bounce(body)
-	queue_redraw()
+	# The physics broad phase maintains nearby bodies; distant pads do no scans.
+	for body in sensor.get_overlapping_bodies():
+		if not (body.is_in_group("Player") or body.is_in_group("enemies")):
+			continue
+		if body.dead or body.is_queued_for_deletion() or cooldowns.has(body.get_instance_id()):
+			continue
+		if global_position.distance_squared_to(body.global_position) < 42 * 42:
+			bounce(body)
+	if pulse > 0 or not cooldowns.is_empty():
+		queue_redraw()
+
 func bounce(body):
 	var dir := global_position.direction_to(body.global_position)
 	if dir.is_zero_approx():
