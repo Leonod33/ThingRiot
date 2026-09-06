@@ -3,6 +3,9 @@ var radius := 170.0
 var age := 0.0
 func _ready():
 	z_index = 4
+	add_to_group("blast_feedback")
+	if get_tree().get_nodes_in_group("blast_feedback").size() > 16:
+		queue_free()
 func _process(delta):
 	age += delta
 	if age > 0.35:

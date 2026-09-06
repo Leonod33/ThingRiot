@@ -16,7 +16,8 @@ var current_health: float = 6.0
 var dead := false
 
 var invincible_timer := 0.0
-const INVINCIBLE_TIME := 1.0  # seconds
+var escape_timer := 0.0
+const INVINCIBLE_TIME := 1.6  # seconds
 
 var knockback_vector := Vector2.ZERO
 
@@ -86,7 +87,7 @@ func _on_level_up() -> void:
 
 func apply_knockback(from_position: Vector2) -> void:
 	var direction := (global_position - from_position).normalized()
-	knockback_vector = direction * 140.0
+	knockback_vector = direction * 85.0
 
 # Returns whether the hit/heal was accepted, so contact effects respect immunity.
 func change_health(amount: float) -> bool:
@@ -95,6 +96,13 @@ func change_health(amount: float) -> bool:
 	if amount < 0.0:
 		amount *= 1.0 - clampf(stats.defense, 0.0, 0.8)
 		invincible_timer = INVINCIBLE_TIME
+		escape_timer = 0.7
+		for enemy in get_tree().get_nodes_in_group("enemies"):
+			if global_position.distance_squared_to(enemy.global_position) < 130.0*130.0:
+				enemy.apply_knockback(global_position,430.0)
+		var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+		if feedback:
+			feedback.hurt()
 	current_health = clampf(current_health + amount, 0.0, float(max_health))
 	get_node("/root/Main/UILayer/HUD/HBoxContainer").update_hearts()
 	if current_health <= 0.000001:
@@ -113,6 +121,7 @@ func die():
 		get_tree().change_scene_to_file.call_deferred("res://GameOverScreen.tscn")
 
 func _physics_process(delta):
+	escape_timer = maxf(0,escape_timer-delta)
 	var input_vector = Vector2.ZERO
 
 	if invincible_timer > 0:
@@ -130,7 +139,7 @@ func _physics_process(delta):
 
 	# MOVE using stats.speed
 	var move_speed := stats.speed if stats else 260.0
-	velocity = input_vector * move_speed + knockback_vector
+	velocity = input_vector * move_speed * (1.3 if escape_timer > 0 else 1.0) + knockback_vector
 	move_and_slide()
 	knockback_vector = knockback_vector.move_toward(Vector2.ZERO, 650.0 * delta)
 	var camera: Camera2D = $Camera2D

@@ -57,6 +57,7 @@ func run_tests():
 	await settle()
 	die.travelled = die.spec.reach
 	die._physics_process(1.5)
+	die._physics_process(2.1)
 	check(enemy.hp < 100 and enemy.hp >= 93,"ordinary die applies bounded rolled damage")
 	var hp = enemy.hp
 	die.cash_out(false)
@@ -71,9 +72,11 @@ func run_tests():
 	await settle()
 	die.global_position = enemy.global_position - Vector2(80,0)
 	await settle()
-	crown.global_position = die.global_position - Vector2(100,0)
-	crown.direction = Vector2.RIGHT
+	die.state = "ready"
+	crown.begin_return()
+	crown.global_position = die.global_position + Vector2(100,0)
 	crown._physics_process(0.2)
+	die._physics_process(0.56)
 	check(die.pips == 6 and enemy.hp == hp-7,"crown cashes die into guaranteed six")
 	check(run.combinations.has("Royal Wager"),"second combination is discovered")
 	w.celebrate_combo(4)

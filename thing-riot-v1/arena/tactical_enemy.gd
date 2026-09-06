@@ -5,6 +5,7 @@ var clock := 1.0
 var attack_direction := Vector2.RIGHT
 var windup_count := 0
 func _ready():
+	basic_art = false
 	super._ready()
 	$Sprite2D.hide()
 	scale = Vector2(1.4,1.4)

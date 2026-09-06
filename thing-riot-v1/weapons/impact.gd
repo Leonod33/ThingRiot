@@ -3,6 +3,9 @@ var age := 0.0
 var tint := Color("fff0a0")
 func _ready():
 	z_index = 2
+	add_to_group("polish_effects")
+	if get_tree().get_nodes_in_group("polish_effects").size() > 32:
+		queue_free()
 func _process(delta):
 	age += delta
 	if age > 0.22:

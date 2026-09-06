@@ -3,6 +3,7 @@ const Shot = preload("res://weapons/riot_projectile.gd")
 var crown = preload("res://weapons/crown.tres")
 var dice = preload("res://weapons/dice.tres")
 var dice_timer := 0.4
+var equipped := {"crown":true,"biscuit":false,"dice":false}
 var biscuit = preload("res://weapons/biscuit.tres")
 var player: Node2D
 var crown_timer := 0.15
@@ -22,6 +23,7 @@ var performance_timer := 0.0
 
 func _ready():
 	player = get_parent()
+	muted = not get_tree().get_meta("sound_on",true)
 	dice = dice.duplicate(true)
 	crown = crown.duplicate(true)
 	biscuit = biscuit.duplicate(true)
@@ -74,6 +76,7 @@ func _unhandled_input(event):
 		performance_timer = 0.0
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_M:
 		muted = not muted
+		get_tree().set_meta("sound_on",not muted)
 		if muted:
 			audio.stop()
 
@@ -109,16 +112,16 @@ func _physics_process(delta):
 	biscuit_timer -= delta
 	dice_timer -= delta
 	if manual or target:
-		if dice_timer <= 0:
+		if equipped.dice and dice_timer <= 0:
 			fire_dice()
 			dice_timer = dice.cooldown * player.stats.attack_speed
-		if biscuit_timer <= 0:
+		if equipped.biscuit and biscuit_timer <= 0:
 			fire(biscuit)
 			biscuit_timer = biscuit.cooldown * player.stats.attack_speed
 		if crown_timer <= 0:
 			fire(crown)
 			crown_timer = crown.cooldown * player.stats.attack_speed
-	readout.text = "CROWN + BISCUITS + LOADED DICE\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nCrumbs + crown: ricochets. Crown + die: guaranteed six!" % ["MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
+	readout.text = "%s\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nUnlock weapons at level-up. Return crown to a settled die." % [" + ".join(equipped_names()), "MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
 	queue_redraw()
 
 func fire(spec: Resource):
@@ -182,3 +185,18 @@ func celebrate_wager():
 	if run:
 		run.discover("Royal Wager",1)
 	play_tone("combo")
+
+func equipped_names() -> Array[String]:
+	var names: Array[String] = ["Returning Crown"]
+	if equipped.biscuit:
+		names.append("Biscuit Blaster")
+	if equipped.dice:
+		names.append("Loaded Dice")
+	return names
+
+func unlock(kind: String):
+	if equipped.has(kind):
+		equipped[kind] = true
+		var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+		if feedback:
+			feedback.sound("unlock")
