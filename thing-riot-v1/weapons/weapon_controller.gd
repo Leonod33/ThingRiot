@@ -1,6 +1,8 @@
 extends Node2D
 const Shot = preload("res://weapons/riot_projectile.gd")
 var crown = preload("res://weapons/crown.tres")
+var dice = preload("res://weapons/dice.tres")
+var dice_timer := 0.4
 var biscuit = preload("res://weapons/biscuit.tres")
 var player: Node2D
 var crown_timer := 0.15
@@ -20,6 +22,7 @@ var performance_timer := 0.0
 
 func _ready():
 	player = get_parent()
+	dice = dice.duplicate(true)
 	crown = crown.duplicate(true)
 	biscuit = biscuit.duplicate(true)
 	audio = AudioStreamPlayer.new()
@@ -104,14 +107,18 @@ func _physics_process(delta):
 			aim = player.global_position.direction_to(target.global_position)
 	crown_timer -= delta
 	biscuit_timer -= delta
+	dice_timer -= delta
 	if manual or target:
+		if dice_timer <= 0:
+			fire_dice()
+			dice_timer = dice.cooldown * player.stats.attack_speed
 		if biscuit_timer <= 0:
 			fire(biscuit)
 			biscuit_timer = biscuit.cooldown * player.stats.attack_speed
 		if crown_timer <= 0:
 			fire(crown)
 			crown_timer = crown.cooldown * player.stats.attack_speed
-	readout.text = "RETURNING CROWN + BISCUIT BLASTER\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nCrumbs enable ricochets. Bomb crates blast foes; spring pads launch." % ["MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
+	readout.text = "CROWN + BISCUITS + LOADED DICE\n%s  |  Hold RMB / right stick to aim\nWASD / arrows / left stick  •  M: sound %s\nCrumbs + crown: ricochets. Crown + die: guaranteed six!" % ["MANUAL AIM" if manual else "AUTO AIM", "OFF" if muted else "ON"]
 	queue_redraw()
 
 func fire(spec: Resource):
@@ -140,6 +147,9 @@ func play_tone(kind: String):
 	sound_cooldown = 0.08
 
 func celebrate_combo(chain: int):
+	var run = get_tree().current_scene.get_node_or_null("RunDirector")
+	if run:
+		run.discover("Royal Crumble",chain)
 	combo_count += 1
 	combo_time = 1.3
 	combo_label.text = "ROYAL CRUMBLE!  ×%d" % chain
@@ -151,3 +161,24 @@ func _draw():
 		draw_arc(point, 10, 0, TAU, 24, Color.WHITE, 2)
 		draw_line(point - Vector2(15,0), point + Vector2(15,0), Color.WHITE, 1)
 		draw_line(point - Vector2(0,15), point + Vector2(0,15), Color.WHITE, 1)
+
+func fire_dice():
+	if get_tree().get_nodes_in_group("loaded_dice").size() >= 8 or get_tree().get_nodes_in_group("riot_projectiles").size() >= 48:
+		return
+	var die = preload("res://weapons/loaded_die.gd").new()
+	die.spec = dice
+	die.owner_player = player
+	die.controller = self
+	die.direction = aim
+	die.damage = player.stats.attack_power
+	get_tree().current_scene.add_child(die)
+	die.global_position = player.global_position + aim * 35
+	play_tone("biscuit")
+
+func celebrate_wager():
+	combo_time = 1.3
+	combo_label.text = "ROYAL WAGER!  Guaranteed six"
+	var run = get_tree().current_scene.get_node_or_null("RunDirector")
+	if run:
+		run.discover("Royal Wager",1)
+	play_tone("combo")

@@ -5,9 +5,13 @@ extends Node2D
 @onready var upgrade_picker: UpgradePicker = $UILayer/UpgradePicker
 
 var pending_level_ups: int = 0
+var run: Node
 
 func _ready() -> void:
 	get_tree().paused = false
+	run = preload("res://run/run_director.gd").new()
+	run.name = "RunDirector"
+	add_child(run)
 	# You already refresh the pause panel on stat changes:
 	player.level_up.connect(_on_player_stats_changed)
 	player.xp_changed.connect(_on_player_stats_changed)
@@ -43,6 +47,8 @@ func _on_player_stats_changed(_a = 0, _b = 0, _c = 0) -> void:
 # ---------- Upgrade picker glue ----------
 
 func _on_player_level_up(_level: int) -> void:
+	if run and run.ended:
+		return
 	pending_level_ups += 1
 	get_tree().paused = true
 	pause_panel.close()

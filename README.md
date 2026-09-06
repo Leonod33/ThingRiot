@@ -130,3 +130,48 @@ godot --headless --fixed-fps 60 --path thing-riot-v1 --script res://tests/combat
 Use Godot 4.3 and the same machine/settings for comparisons. The benchmark creates 180 durable enemies (120 casters), 24 initial crumb patches and boosted weapon fire in an isolated fixture. It samples wall-frame time and script callback time after warmup. Script timing excludes physics-server work outside those callbacks. `--fixed-fps 60` fixes simulation steps; these are offline timings, not displayed FPS.
 
 One recorded headless comparison against Step 3 reduced median wall-frame time from 24.504 to 6.390 ms, and p95 from 53.767 to 11.855 ms. Script callback medians were 18.145 and 2.897 ms. Both runs used the same temporary two-worker setting; that setting is not shipped. These results are preliminary and hardware-dependent. Rendered stress validation was not completed, so Windows/controller playtesting remains necessary. Try F3 during a crowded fight and report FPS plus enemy/shot counts if stutter remains.
+
+
+## Step 4: The final audit
+
+A run now has seven minutes of paced waves followed by **the Bureaucrab**. Defeating the boss wins; losing your health ends in defeat. Eight minutes is the intended pace, not a hard deadline—boss duration depends on your build. All three weapons are equipped from the start.
+
+### Loaded Dice and Royal Wager
+
+Loaded Dice roll forward, then burst after 1.4 seconds. Each die rolls 1–6 and deals attack power plus its face value to nearby enemies. Luck improves the face at 50% and 100% luck. The die shows its pips so the roll is readable without colour.
+
+Hit a die with an outward or returning crown to discover **Royal Wager**: a guaranteed six and a 50% larger blast. **Royal Crumble** remains crown ricochets between crumb-coated enemies. High Roller increases dice blast radius (up to 220); Another Throw reduces the base dice cooldown (down to 1.2 seconds). Shared power and attack-speed upgrades also apply.
+
+### Run pacing
+
+| Time | Encounter |
+| --- | --- |
+| 00:00 | Royal welcome: basic pursuers |
+| 01:00 | Charge of the clerks: chargers join |
+| 02:00 | Paperwork patrol: casters join |
+| 03:00 | Lunch rush: larger mixed batches |
+| 04:00 | The audit: increasing pressure |
+| 05:00 | Mandatory overtime |
+| 06:00 | Final notice |
+| 07:00 | The Bureaucrab |
+
+Each wave's last ten seconds stops new spawns, giving time to collect gems. Existing enemies still pursue. The run clock pauses for upgrades and manual pause. This timing supersedes Step 3's earlier 20/40-second introductions. Enemies more than 2,200 pixels away are removed without loot so distant pursuers do not exhaust the 180-enemy cap.
+
+At seven minutes, remaining regular enemies and their shots clear for the boss entrance. The Bureaucrab locks a rectangle onto your position, shows a 1.25-second warning, then stamps it once. It teaches long and wide rectangles separately for four attacks. Below half health, it combines the learned shapes into a cross. Move diagonally out of both arms. The boss follows if you retreat; its health bar remains visible.
+
+Victory and defeat screens show time, level, kills, all three weapons, key stats, chosen upgrades, combinations discovered and biggest chain. Play Again starts a fresh run immediately; Back to Title returns to the menu. Buttons accept keyboard/controller focus navigation.
+
+### Bounds and validation
+
+The existing 48-projectile cap includes dice; at most eight dice and six boss stamps can coexist. Dice blasts do not recursively trigger other dice. Bomb-crate chains are limited to six links and contribute to the run's biggest-chain statistic.
+
+Godot 4.3: all 112 checks pass across the five suites (34 core + 16 weapons + 19 arena + 9 collision queries + 34 run checks). The new suite checks wave/breather transitions, actual crown-to-die swept collision, die expiry, both discoveries, per-run upgrades, paused time, boss introduction and teaching order, dodging, single-hit stamps, victory, defeat and reset.
+
+```sh
+godot --headless --path thing-riot-v1 --script res://tests/run_test.gd
+godot --path thing-riot-v1 --script res://tests/run_visual.gd
+```
+
+The isolated visual fixture captures `step4-boss.png` and `step4-results.png` in Godot's user-data folder. Its frozen warnings and staged summary are for inspection only. Both renders were inspected with software OpenGL. Full human run balance, physical-controller playtesting, music and the remaining Step 5 polish are still to follow.
+
+A headless stress run with Loaded Dice active retained 180 enemies and 40 royal projectiles, measuring 5.532 ms median wall-frame time and 7.659 ms p95 on the development machine. These offline timings are not a guarantee of displayed FPS on other hardware.

@@ -57,6 +57,9 @@ func take_damage(amount):
 	hp -= amount
 	if hp <= 0:
 		dead = true
+		var run = get_tree().current_scene.get_node_or_null("RunDirector")
+		if run:
+			run.kills += 1
 		_spawn_xp_gem(global_position)
 		queue_free()
 
