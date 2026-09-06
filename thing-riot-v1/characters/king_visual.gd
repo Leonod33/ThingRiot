@@ -10,7 +10,7 @@ func _process(delta):
 	phase += delta * (12.0 if walking > 0.1 else 2.0)
 	if absf(p.velocity.x) > 15:
 		facing = signf(p.velocity.x)
-	modulate.a = 0.65 if p.invincible_timer > 0 and sin(phase * 5) > 0 else 1.0
+	modulate = Color(2.2,2.2,2.2) if p.invincible_timer > 1.46 else Color.WHITE
 	queue_redraw()
 func shape(points: Array, colour: Color):
 	var poly := PackedVector2Array(points)
@@ -19,6 +19,11 @@ func shape(points: Array, colour: Color):
 	draw_polyline(poly, INK, 2.0, true)
 func _draw():
 	var shield: float = get_parent().invincible_timer
+	if shield > 1.35:
+		var direction: Vector2 = get_parent().hit_direction
+		var contact := Vector2(0,-17)+direction*38
+		draw_line(contact,contact+direction*15,Color("fff0c5"),5,true)
+		draw_line(contact+direction.orthogonal()*9,contact+direction*10+direction.orthogonal()*12,Color("fff0c5"),2,true)
 	if shield > 0:
 		draw_arc(Vector2(0,-17),36,-PI/2,-PI/2+TAU*shield/1.6,40,Color("c5edff"),3.0,true)
 		draw_arc(Vector2(0,-17),40,0,TAU,40,Color(0.7,0.9,1,0.3),1.0,true)

@@ -30,6 +30,7 @@ func open(p: Node) -> void:
 	player = p
 	print("[PausePanel] open()")
 	_refresh()
+	stats_label.add_theme_font_size_override("font_size",24)
 	show()
 	resume_btn.grab_focus()  # start with Resume focused
 
@@ -70,6 +71,7 @@ func _refresh() -> void:
 	lines.append("Luck: %.0f%%" % (s.luck * 100.0))
 
 	stats_label.text = "\n".join(lines)
+	stats_label.text += "\n\nWASD / arrows: move • RMB / right stick: aim\nM: sound • Esc: resume\nReturn crown to settled dice for a Royal Six."
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("pause") and not event.is_echo():

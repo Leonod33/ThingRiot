@@ -133,6 +133,7 @@ func run_tests():
 	hit._physics_process(1.3)
 	check(p.current_health == health-2,"stamp damages once")
 	boss.take_damage(1)
+	await create_timer(1.8).timeout
 	await settle()
 	check(current_scene.name == "GameOverScreen" and current_scene.summary.victory,"boss kill produces victory")
 	check(current_scene.summary.combos.size() == 2 and current_scene.summary.build.has("High Roller ×1"),"results show discoveries and build")

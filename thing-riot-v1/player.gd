@@ -19,6 +19,7 @@ var invincible_timer := 0.0
 var escape_timer := 0.0
 const INVINCIBLE_TIME := 1.6  # seconds
 
+var hit_direction := Vector2.UP
 var knockback_vector := Vector2.ZERO
 
 func _ready():
@@ -32,7 +33,7 @@ func _ready():
 	$CollisionShape2D.scale = Vector2.ONE
 	$CollisionShape2D.position = Vector2(0,2)
 
-	z_index = 1
+	z_index = 6
 	var weapons = preload("res://weapons/weapon_controller.gd").new()
 	weapons.name = "Weapons"
 	add_child.call_deferred(weapons)
@@ -86,6 +87,7 @@ func _on_level_up() -> void:
 	emit_signal("level_up", level)
 
 func apply_knockback(from_position: Vector2) -> void:
+	hit_direction = global_position.direction_to(from_position)
 	var direction := (global_position - from_position).normalized()
 	knockback_vector = direction * 85.0
 

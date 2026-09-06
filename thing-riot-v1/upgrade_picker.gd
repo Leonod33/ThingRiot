@@ -162,7 +162,7 @@ func open_for(player_ref: Node) -> void:
 	_set_button(btn_b, current_choices[1])
 	_set_button(btn_c, current_choices[2])
 	get_node("Center").set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	popup_centered(Vector2i(1040,260))
+	popup_centered(Vector2i(1040,330))
 	btn_a.grab_focus()
 
 func _set_button(btn: Button, choice: Dictionary) -> void:
@@ -174,16 +174,37 @@ func _set_button(btn: Button, choice: Dictionary) -> void:
 			width = 0
 		lines += word + " "
 		width += word.length()+1
-	btn.text = "%s\n\n%s" % [choice["title"],lines.strip_edges()]
+	var detail := lines.strip_edges()
+	match choice["id"]:
+		"dmg_1": detail = "Power %d → %d" % [player.stats.attack_power,player.stats.attack_power+1]
+		"proj_1": detail = "Crowns %d → %d" % [player.stats.projectile_count,mini(6,player.stats.projectile_count+1)]
+		"royal_chain": detail = "Ricochets %d → %d" % [player.get_node("Weapons").crown.bounce_limit,mini(5,player.get_node("Weapons").crown.bounce_limit+1)]
+		"unlock_dice": detail = "NEW WEAPON\nRoll. Settle. Return crown\nfor a Royal Six."
+		"unlock_biscuit": detail = "NEW WEAPON\nSlowing crumbs + crown ricochets."
+	btn.text = "\n\n%s\n\n%s" % [choice["title"].replace("NEW • ",""),detail]
+	var icon = btn.get_node_or_null("WeaponIcon")
+	if not icon:
+		icon = preload("res://polish/weapon_icon.gd").new()
+		icon.name = "WeaponIcon"
+		btn.add_child(icon)
+	icon.position = Vector2(138,14)
+	icon.size = Vector2(44,44)
+	var id: String = choice["id"]
+	icon.kind = "dice" if "dice" in id else ("biscuit" if "crumb" in id or "biscuit" in id or id == "royal_chain" else ("stat" if id in ["hp_1","def_5","luck_10","spd_10"] else "crown"))
+	icon.queue_redraw()
 	btn.add_theme_font_size_override("font_size",17)
 	btn.focus_mode = Control.FOCUS_ALL
 	# (Optional) wider buttons:
-	btn.custom_minimum_size = Vector2(320, 126)
+	btn.custom_minimum_size = Vector2(320, 200)
 
 func _choose(index: int) -> void:
 	if not visible or player == null or index < 0 or index >= current_choices.size():
 		return
 	var choice : Dictionary = current_choices[index]
+	var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+	if feedback:
+		feedback.sound("unlock")
+		feedback.announce(choice["title"],1.2)
 	(choice["apply"] as Callable).call(player)
 	var director = get_tree().current_scene.get_node_or_null("RunDirector")
 	if director:

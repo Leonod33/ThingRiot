@@ -3,6 +3,7 @@ const BOSS_TIME := 420.0
 const WAVES := ["Royal welcome", "Charge of the clerks", "Paperwork patrol", "Lunch rush", "The audit", "Mandatory overtime", "Final notice"]
 var elapsed := 0.0
 var ended := false
+var victory_pending := false
 var boss_started := false
 var boss: Node2D
 var kills := 0
@@ -32,9 +33,10 @@ func _ready():
 	boss_bar.show_percentage = false
 	boss_bar.hide()
 	canvas.add_child(boss_bar)
+	status.hide()
 	update_hud()
 func _process(delta):
-	if ended:
+	if ended or victory_pending:
 		return
 	elapsed += delta
 	cleanup -= delta
@@ -61,7 +63,7 @@ func update_hud():
 		if is_instance_valid(boss):
 			boss_bar.max_value = boss.max_hp
 			boss_bar.value = maxi(0,boss.hp)
-			boss_bar.show()
+			boss_bar.hide()
 	else:
 		status.text = time + "  •  " + WAVES[wave_index()] + "\n" + ("Breather: collect gems!" if is_break() else "Final audit at 07:00")
 func start_boss():
@@ -83,6 +85,10 @@ func start_boss():
 	point.x = clampf(point.x,cam.limit_left+160,cam.limit_right-160)
 	point.y = clampf(point.y,cam.limit_top+160,cam.limit_bottom-160)
 	boss.global_position = point
+	var feedback = get_parent().get_node_or_null("Feedback")
+	if feedback:
+		feedback.announce("FINAL AUDIT\nThe Bureaucrab",2.0)
+		feedback.sound("arrival")
 	update_hud()
 func discover(combo: String, chain: int):
 	combinations[combo] = true
@@ -114,3 +120,28 @@ func finish(victory: bool):
 func show_results():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://GameOverScreen.tscn")
+
+func begin_victory():
+	if ended or victory_pending:
+		return
+	victory_pending = true
+	var game = get_parent()
+	game.pending_level_ups = 0
+	game.upgrade_picker.hide()
+	game.pause_panel.close()
+	get_tree().paused = false
+	var p = game.get_node("Player")
+	p.invincible_timer = 1.0 # Held while physics is stopped, without retriggering the hit flash.
+	p.velocity = Vector2.ZERO
+	p.set_physics_process(false)
+	p.get_node("Weapons").set_physics_process(false)
+	# Stop all harmful actors before presenting the ending.
+	for group in ["boss_stamps","enemy_bolts"]:
+		for actor in get_tree().get_nodes_in_group(group):
+			actor.set_physics_process(false)
+			actor.queue_free()
+	var feedback = game.get_node_or_null("Feedback")
+	if feedback:
+		feedback.announce("AUDIT REJECTED",1.6)
+		feedback.sound("victory")
+	get_tree().create_timer(1.6,false).timeout.connect(func(): finish(true))

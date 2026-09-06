@@ -12,6 +12,9 @@ func _physics_process(delta):
 	age += delta
 	if not struck and age >= warning:
 		struck = true
+		var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+		if feedback:
+			feedback.sound("stamp")
 		if is_instance_valid(player) and not player.dead and Rect2(-size/2, size).has_point(to_local(player.global_position)):
 			player.change_health(-2)
 	if age >= warning + 0.35:
@@ -20,7 +23,8 @@ func _physics_process(delta):
 func _draw():
 	var box := Rect2(-size/2,size)
 	draw_rect(box, Color(0.12,0.1,0.19,0.7) if not struck else Color(1,0.86,0.55,0.65))
-	draw_rect(box, Color("fff0c5"),  false, 4)
+	draw_rect(box.grow(2),Color("20283b"),false,6)
+	draw_rect(box, Color("fff0c5"), false, 3)
 	if not struck:
 		var amount := clampf(age / warning, 0, 1)
 		draw_rect(Rect2(-size/2, Vector2(size.x * amount, 8)), Color("f5bd69"))

@@ -210,3 +210,23 @@ godot --headless --path thing-riot-v1 --script res://tests/polish_test.gd
 ```
 
 The existing run fixture was updated for the new settle/reveal timing. Before treating this draft as release-ready, import it in Godot 4.3 and try a crown-only opening, unlock both weapons, watch a returning crown cash a settled die, and take a hit inside a crowd. Music taste/volume, escape balance and a full run still need a human pass.
+
+
+## Focused combat presentation pass
+
+The current presentation follows `ART_DIRECTION.md`: a storybook royal farce with tactile arcade feedback. This pass reuses the characters and gameplay; the environment/illustration overhaul remains separate.
+
+- A single combat HUD replaces the visible legacy hearts/text stack with exact HP, a recent-damage trail, XP, encounter status, a boss health trail and three illustrated equipment slots. Opening instructions fade after 12 seconds; help remains in pause. Upgrade cards have icons and concrete power/crown/ricochet changes.
+- The King stays opaque and sits above friendly projectiles. Hostile projectiles are outlined paper darts above the King, distinct from diamond XP. Accepted hits flash locally, show a directional contact accent and place HIT above the King. Existing immunity/pushback/boost mechanics are unchanged.
+- Crown has a fine trail, metallic hit transient and quiet catch. Biscuits have a warm trail, baked edge and angular crunch fragments. Crumb patches keep their gameplay area but use quieter broken boundaries. Dice tumble visually into a stable result with clacks, shaded ivory and a crowned Royal Six seal; roll, ready fuse and reveal durations are unchanged.
+- Audio uses three launch voices, three impact voices, one protected damage voice and one signature voice. Routine material sounds vary slightly, are rate-limited, and duck during important events. Noise/variation use an independent RNG. Longer music phrases include rests. Menu audio controls and M remain available.
+- Bureaucrab has live claw/leg animation, a restored hit flash, an arrival cue and stamp sound. Death immediately disables harmful stamps/bolts, blocks new upgrade interruptions and freezes the player for a 1.6-second paper-scatter/AUDIT REJECTED beat before victory results. Restart creates fresh ending state.
+
+Validation for this pass: `git diff --check` and literal resource-reference checks passed. **Godot import, runtime tests, rendered QA and listening review remain outstanding.** The executable is unavailable; the attempted official runtime download was cancelled by network approval. No earlier test result is claimed for this patch. The focused fixture below is supplied, not yet executed:
+
+```sh
+godot --headless --editor --path thing-riot-v1 --import
+godot --headless --path thing-riot-v1 --script res://tests/presentation_test.gd
+```
+
+For playtesting, compare normal combat and a crowded hit, inspect the three weapon unlock/upgrade cards, then check Dice roll/reveal and Bureaucrab's stamping/ending. Listen especially for damage cutting through routine attacks without the whole mix becoming louder. The existing run fixture now waits for the intentional victory beat. Broad controller testing is deferred as requested.
