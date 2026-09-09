@@ -1,0 +1,52 @@
+name: Godot presentation QA
+on:
+  pull_request:
+    branches: ["main", "feat/combat-presentation"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: godot-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  godot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GODOT_SILENCE_ROOT_WARNING: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot 4.3 and virtual display
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          curl -fsSL --retry 3 https://github.com/godotengine/godot-builds/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          sudo install /tmp/godot/Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+      - name: Import and regression tests
+        run: |
+          mkdir -p qa-output
+          godot --headless --editor --path thing-riot-v1 --import 2>&1 | tee qa-output/import.log
+          if grep -E 'SCRIPT ERROR|Parse Error|Failed to load script' qa-output/import.log; then exit 1; fi
+          for test in core_loop weapon arena collision_query run polish presentation; do
+            timeout 100 godot --headless --path thing-riot-v1 --script "res://tests/${test}_test.gd" 2>&1 | tee "qa-output/${test}.log"
+            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' "qa-output/${test}.log"; then exit 1; fi
+          done
+          if test -f thing-riot-v1/tests/midnight_test.gd; then
+            timeout 100 godot --headless --path thing-riot-v1 --script res://tests/midnight_test.gd 2>&1 | tee qa-output/midnight.log
+            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' qa-output/midnight.log; then exit 1; fi
+          fi
+      - name: Render visual fixtures
+        if: always()
+        run: |
+          mkdir -p qa-output
+          fixture=run_visual
+          if test -f thing-riot-v1/tests/midnight_visual.gd; then fixture=midnight_visual; fi
+          timeout 90 xvfb-run -a -s "-screen 0 1280x800x24" godot --path thing-riot-v1 --rendering-method gl_compatibility --audio-driver Dummy --script "res://tests/${fixture}.gd" 2>&1 | tee qa-output/render.log
+          find "$HOME/.local/share/godot/app_userdata" -name '*.png' -exec cp {} qa-output/ \;
+          if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' qa-output/render.log; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: godot-qa
+          path: qa-output/
