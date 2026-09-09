@@ -2,6 +2,9 @@
 
 **Current build:** one arena, the King, three unlockable weapons and an eight-minute-target run ending with the Bureaucrab. The Step 5 section below describes current controls and weapon behaviour; older sections record previous milestones.
 
+**Midnight Audit upgrade:** the newest visual/audio pass adds an illustrated courtyard and enemies, material weapon art/VFX, and three original arranged music tracks with varied SFX. See [the upgrade notes](docs/MIDNIGHT_AUDIT.md), [art sheet](docs/midnight-art-sheet.png), and the Godot QA workflow for exact validation status.
+
+
 Inspired by “Vampire Survivors” but with a surreal, whimsical twist!
 
 ## Premise

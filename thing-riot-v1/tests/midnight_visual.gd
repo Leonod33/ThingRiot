@@ -95,6 +95,7 @@ func run():
 		node.queue_free()
 	await process_frame
 	p.invincible_timer = 0
+	current_scene.get_node("Feedback").hurt_time = 0
 	director.elapsed = 421
 	director.start_boss()
 	var boss = director.boss

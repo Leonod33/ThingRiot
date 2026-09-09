@@ -47,6 +47,18 @@ jobs:
           timeout 90 xvfb-run -a -s "-screen 0 1280x800x24" godot --path thing-riot-v1 --rendering-method gl_compatibility --audio-driver Dummy --script "res://tests/${fixture}.gd" 2>&1 | tee qa-output/render.log
           find "$HOME/.local/share/godot/app_userdata" -name '*.png' -exec cp {} qa-output/ \;
           if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' qa-output/render.log; then exit 1; fi
+      - name: Compare rendered crowded combat with the baseline
+        run: |
+          set -o pipefail
+          git fetch --depth=1 origin edd5c66fb195c1917a8440ad47c4359557fe5a10
+          git worktree add /tmp/riot-baseline FETCH_HEAD
+          godot --headless --editor --path /tmp/riot-baseline/thing-riot-v1 --import > qa-output/baseline-import.log 2>&1
+          for version in baseline current; do
+            project=thing-riot-v1
+            if test "$version" = baseline; then project=/tmp/riot-baseline/thing-riot-v1; fi
+            timeout 90 xvfb-run -a -s "-screen 0 1280x800x24" godot --path "$project" --rendering-method gl_compatibility --audio-driver Dummy --fixed-fps 60 --script res://tests/combat_benchmark.gd 2>&1 | tee "qa-output/benchmark-$version.log"
+            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' "qa-output/benchmark-$version.log"; then exit 1; fi
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:

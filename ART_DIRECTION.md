@@ -2,6 +2,15 @@
 
 Storybook royal farce with tactile arcade feedback. Inked silhouettes, restrained shading, brass, ivory dice, biscuit crumbs and officious stationery. Humour belongs to the premise; presentation takes it seriously.
 
+## Midnight Audit implementation
+The arena is now a slate royal courtyard with engraved crown medallions, worn planters, lanterns and discarded paperwork. The paper clerk, charging stapler and ink caster share imported vector artwork and distinct silhouettes. Bureaucrab keeps articulated legs and stamping claws around a detailed suited body. Do not turn decorative scenery into collision obstacles without an explicit gameplay pass.
+
+`assets/midnight/` contains original editable SVGs; `tools/build_midnight_art.py` regenerates them with the Python standard library. Use ordinary paths and gradients, and explicit `fill-opacity` rather than eight-digit CSS colours for Godot 4.3's SVG importer. The same crown, biscuit and die artwork appears in combat and equipment cards. The native art sheet is in `docs/midnight-art-sheet.png` and Canva Uploads.
+
+Enemy textures are imported once. Motion uses small transform changes at 20 Hz, gated by on-screen visibility; damage flashes remain driven by gameplay state. The courtyard uses one repeating floor quad and a bounded 5×5 cell neighbourhood. All scenery choices are deterministic without using the gameplay RNG. Paper death debris shares the 32 ordinary-effect cap; bomb and dice effects keep their own budgets. Crumb markers are interrupted, subdued arcs rather than persistent bright circles.
+
+Music is three original 32-bar arrangements at 112 BPM, each 68.57 seconds. A four-bar phrase contains bass, plucked accompaniment, an answering melody and percussion, with eight-bar sections and a quieter middle passage. Stage changes preserve playback phase and crossfade over one bar. SFX use offline material recordings, avoid consecutive identical variants, and keep dedicated damage/signature voices. `RiotEffects` compresses routine transients; `RiotMix` limits output. Do not increase all volumes to make one cue readable. The Python source, Ogg assets and measured render report are included; no external samples were used.
+
 ## Visual language
 Navy #20283b outlines; cream #fff0c5 highlights; brass #e7bd70 signatures; blue #85c9e0 player accents. Muted world and enemies. Never encode danger with red/green alone: hostile shots are pointed paper darts, XP is a compact diamond, stamps have crosses and a locked boundary.
 

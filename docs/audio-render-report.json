@@ -215,7 +215,7 @@
   "sfx/spring_1": {
     "seconds": 0.4,
     "source_peak_db": -2.85,
-    "source_rms_db": -17.07,
+    "source_rms_db": -17.03,
     "loop": false
   },
   "sfx/spring_2": {
@@ -227,7 +227,7 @@
   "sfx/spring_3": {
     "seconds": 0.4,
     "source_peak_db": -2.85,
-    "source_rms_db": -17.07,
+    "source_rms_db": -17.08,
     "loop": false
   },
   "sfx/pickup_1": {

@@ -184,7 +184,7 @@ def material(kind,variant=0):
             tau=np.maximum(0,t-.055)
             y+=(t>.055)*noise(t,8500,1200)*np.exp(-tau*22)*.24
     elif kind=='spring':
-        y=np.sin(2*np.pi*(180*t+700*t*t))*np.exp(-t*11)*.6+np.sin(2*np.pi*700*t)*np.exp(-t*35)*.2
+        y=np.sin(2*np.pi*(180*f*t+700*f*t*t))*np.exp(-t*11)*.6+np.sin(2*np.pi*700*f*t)*np.exp(-t*35)*.2
     elif kind=='pickup':
         y=np.sin(2*np.pi*hz(86)*f*t)*np.exp(-t*22)*.3+np.sin(2*np.pi*hz(93)*t)*np.exp(-t*28)*.15
     y=fade(y,.002,.035)

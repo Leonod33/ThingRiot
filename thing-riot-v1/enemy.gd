@@ -111,7 +111,8 @@ func _draw():
 		draw_line(Vector2(-5,-10),Vector2(-2,-15),Color("20283b"),3)
 		draw_line(Vector2(-2,-15),Vector2(5,-13),Color("e9be72"),3)
 	if crumb_time > 0:
-		draw_arc(Vector2.ZERO, 17, 0, TAU, 24, Color("ffe0a0"), 1.5)
+		for arc in range(4):
+			draw_arc(Vector2.ZERO,17,arc*PI/2,arc*PI/2+0.75,8,Color(1,0.88,0.64,0.6),0.85,true)
 		for i in range(5):
 			draw_rect(Rect2(Vector2.from_angle(i * 1.25) * 14, Vector2(3,2)), Color("fff0bb"))
 
