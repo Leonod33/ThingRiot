@@ -42,7 +42,15 @@ func bounce(body):
 	cooldowns[body.get_instance_id()] = 0.9
 	pulse = 0.3
 	bounce_count += 1
+	if body.is_in_group("Player"):
+		var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+		if feedback:
+			feedback.sound("spring")
 func _draw():
+	draw_set_transform(Vector2(0,5),0,Vector2(1,0.72))
+	draw_circle(Vector2.ZERO,35,Color("1c2d40"))
+	draw_circle(Vector2.ZERO,31,Color("866f4f"))
+	draw_set_transform(Vector2.ZERO)
 	draw_circle(Vector2.ZERO,32,Color("27303f"))
 	draw_arc(Vector2.ZERO,28,0,TAU,40,Color("a7e5ee"),3)
 	var r := 20.0 - pulse*16
@@ -52,3 +60,6 @@ func _draw():
 	for i in range(7):
 		points.append(Vector2(-12+i*4, -5 if i%2==0 else 5))
 	draw_polyline(points,Color.WHITE,2)
+	for i in range(8):
+		var point := Vector2.from_angle(i*TAU/8)*29
+		draw_circle(point,2.0,Color("e7bd70"))

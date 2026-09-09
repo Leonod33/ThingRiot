@@ -16,6 +16,13 @@ func settle():
 	await process_frame
 	await process_frame
 
+func xp_gems(game: Node) -> int:
+	var count := 0
+	for node in game.get_children():
+		if node.get_script() == load("res://pickups/xp_gem.gd"):
+			count += 1
+	return count
+
 func run_tests():
 	change_scene_to_file("res://main.tscn")
 	await settle()
@@ -75,11 +82,11 @@ func run_tests():
 	enemy.global_position = player.global_position + Vector2(300,0)
 	enemy.apply_knockback(player.global_position, 200)
 	check(enemy.knockback_velocity.x == 200, "outgoing knockback affects enemy")
-	children_before = game.get_child_count()
+	var gems_before := xp_gems(game)
 	enemy.take_damage(100)
 	enemy.take_damage(100)
 	await settle()
-	check(game.get_child_count() == children_before, "one enemy replaced by exactly one XP gem")
+	check(not is_instance_valid(enemy) and xp_gems(game) == gems_before+1, "one enemy replaced by exactly one XP gem")
 	var bullet_a = load("res://crown_bullet.tscn").instantiate()
 	var bullet_b = load("res://crown_bullet.tscn").instantiate()
 	bullet_b.size_multiplier = 2

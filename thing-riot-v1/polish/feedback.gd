@@ -1,5 +1,14 @@
 extends CanvasLayer
-# All sounds are original synthesized phrases, cached once per run.
+# Original offline recordings; no synthesis or buffer allocation during combat.
+const BANK = preload("res://polish/audio_bank.gd")
+const MUSIC_FADE := 60.0/112.0*4.0
+var variants := {}
+var previous_variant := {}
+var music_players: Array[AudioStreamPlayer] = []
+var music_index := 0
+var music_from := -1
+var music_blend := 1.0
+var duck_gain := 0.0
 var sounds := {}
 var voices := {}
 var last_sound := {}
@@ -15,62 +24,31 @@ var message: Label
 var camera: Camera2D
 var freeze_active := false
 
-func phrase(notes: Array, beat: float, looped := false) -> AudioStreamWAV:
-	var rate := 22050
-	var count := int(rate * beat * notes.size())
-	var data := PackedByteArray()
-	data.resize(count * 2)
-	for i in range(count):
-		var t := float(i) / rate
-		var n := mini(notes.size()-1, int(t / beat))
-		var local := fmod(t, beat)
-		var freq := float(notes[n])
-		var envelope := minf(local / 0.008, 1.0) * pow(1.0-local/beat, 2)
-		var tone := (sin(TAU*freq*local) + 0.22*sin(TAU*freq*2*local)) if freq > 0 else 0.0
-		data.encode_s16(i*2, int(tone*envelope*6500))
-	var wav := AudioStreamWAV.new()
-	wav.format = AudioStreamWAV.FORMAT_16_BITS
-	wav.mix_rate = rate
-	wav.data = data
-	if looped:
-		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		wav.loop_end = count
-	return wav
-
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 8
 	camera = get_parent().get_node("Player/Camera2D")
 	rng.seed = 9042
+	setup_buses()
+	variants = BANK.VARIANTS
+	for kind in variants:
+		sounds[kind] = variants[kind][0]
+		for recording in variants[kind]:
+			recording.loop = false
 	for group in ["launch","impact","damage","signature"]:
 		voices[group] = []
 		for i in range(3 if group in ["launch","impact"] else 1):
 			var voice := AudioStreamPlayer.new()
+			voice.bus = "RiotPriority" if group in ["damage","signature"] else "RiotEffects"
 			add_child(voice)
 			voices[group].append(voice)
-	music = AudioStreamPlayer.new()
-	music.volume_db = -24
-	add_child(music)
-	sounds.hurt = material(95,0.19,0.55,0.3)
-	sounds.crown = material(680,0.09,0.05,0.55)
-	sounds.crown_hit = material(1100,0.12,0.1,0.8)
-	sounds.catch = material(720,0.055,0,0.3)
-	sounds.biscuit = material(180,0.08,0.5,0.05)
-	sounds.crunch = material(125,0.15,0.9,0.08)
-	sounds.throw_die = material(150,0.1,0.25,0.05)
-	sounds.clack = material(360,0.065,0.5,0.15)
-	sounds.dice = material(72,0.23,0.35,0.15)
-	sounds.stamp = material(55,0.28,0.5,0.05)
-	sounds.pickup = phrase([880,1100],0.025)
-	sounds.six = phrase([392,494,587,784],0.075)
-	sounds.crumble = phrase([587,740,880],0.055)
-	sounds.unlock = phrase([392,494,587,784],0.12)
-	sounds.arrival = phrase([147,0,147,156,0,98],0.14)
-	sounds.victory = phrase([392,494,587,0,784,0,587,784],0.13)
-	# Longer phrases with rests: quiet rhythmic space, not a continuous alarm.
-	sounds[0] = phrase([196,0,294,247,0,294,220,0,330,0,247,294,0,247,220,0],0.36,true)
-	sounds[1] = phrase([196,392,0,294,392,0,220,440,0,330,294,0,247,392,0,294],0.28,true)
-	sounds[2] = phrase([147,0,294,156,311,0,147,294,0,220,196,0,147,311,294,0],0.22,true)
+	for i in range(2):
+		var voice := AudioStreamPlayer.new()
+		voice.bus = "RiotMusic"
+		voice.volume_db = -60
+		add_child(voice)
+		music_players.append(voice)
+	music = music_players[0]
 	wash = ColorRect.new()
 	wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	wash.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -97,22 +75,64 @@ func _ready():
 	banner.hide()
 	add_child(banner)
 
-func material(freq: float, duration: float, noise: float, metal: float) -> AudioStreamWAV:
-	var rate := 22050
-	var count := int(duration*rate)
-	var data := PackedByteArray()
-	data.resize(count*2)
-	for i in range(count):
-		var t := float(i)/rate
-		var envelope := minf(t/0.002,1.0)*pow(1.0-t/duration,2)
-		var body := sin(TAU*freq*t)*0.6 + sin(TAU*freq*2.76*t)*metal*0.35
-		body += rng.randf_range(-1,1)*noise*pow(1.0-t/duration,4)
-		data.encode_s16(i*2,int(clampf(body*envelope,-1,1)*12000))
-	var wav := AudioStreamWAV.new()
-	wav.format = AudioStreamWAV.FORMAT_16_BITS
-	wav.mix_rate = rate
-	wav.data = data
-	return wav
+func setup_buses():
+	if AudioServer.get_bus_index("RiotMix") >= 0:
+		return
+	for bus_name in ["RiotMix","RiotMusic","RiotEffects","RiotPriority"]:
+		AudioServer.add_bus()
+		var index := AudioServer.bus_count-1
+		AudioServer.set_bus_name(index,bus_name)
+		AudioServer.set_bus_send(index,"Master" if bus_name == "RiotMix" else "RiotMix")
+	var compressor := AudioEffectCompressor.new()
+	compressor.threshold = -7
+	compressor.ratio = 4
+	compressor.attack_us = 1500
+	compressor.release_ms = 120
+	AudioServer.add_bus_effect(AudioServer.get_bus_index("RiotEffects"),compressor)
+	var limiter := AudioEffectLimiter.new()
+	limiter.ceiling_db = -1.5
+	limiter.threshold_db = -3
+	limiter.soft_clip_db = 0
+	AudioServer.add_bus_effect(AudioServer.get_bus_index("RiotMix"),limiter)
+
+func choose_recording(kind: String) -> AudioStream:
+	var pool: Array = variants[kind]
+	var previous: int = previous_variant.get(kind,-1)
+	var index := 0
+	if pool.size() > 1:
+		index = rng.randi_range(0,pool.size()-1 if previous < 0 else pool.size()-2)
+		if index >= previous and previous >= 0:
+			index += 1
+	previous_variant[kind] = index
+	return pool[index]
+
+func transition_music(stage: int):
+	var phase := music.get_playback_position() if music.playing else 0.0
+	music_from = music_index if music_stage >= 0 else -1
+	music_index = 1-music_index if music_from >= 0 else 0
+	music_stage = stage
+	music = music_players[music_index]
+	music.stream = BANK.MUSIC[stage]
+	music.stream.loop = true
+	music.play(fmod(phase,music.stream.get_length()))
+	music_blend = 0.0
+
+func update_music(delta: float, stage: int):
+	if stage != music_stage:
+		transition_music(stage)
+	var suspended: bool = get_tree().paused or not get_tree().get_meta("music_on",true)
+	if not suspended:
+		music_blend = minf(1,music_blend+delta/MUSIC_FADE)
+	var gain := sin(music_blend*PI/2)
+	music.volume_db = -8+linear_to_db(maxf(gain,0.001))-duck_gain*7
+	for voice in music_players:
+		voice.stream_paused = suspended
+	if music_from >= 0:
+		var previous := music_players[music_from]
+		previous.volume_db = -8+linear_to_db(maxf(cos(music_blend*PI/2),0.001))-duck_gain*7
+		if music_blend >= 1:
+			previous.stop()
+			music_from = -1
 
 func sound(kind: String):
 	if not get_tree().get_meta("sound_on",true) or not sounds.has(kind):
@@ -145,9 +165,13 @@ func sound(kind: String):
 		chosen = voices[group][0]
 	if group in ["damage","signature"]:
 		duck_time = 0.4
-	chosen.stream = sounds[kind]
-	chosen.pitch_scale = 1.0 if group in ["damage","signature"] else rng.randf_range(0.96,1.04)
-	chosen.volume_db = -10 if group == "damage" else (-13 if group == "signature" else -22+rng.randf_range(-1,1))
+	chosen.stream = choose_recording(kind)
+	if group in ["damage","signature"]:
+		duck_time = maxf(duck_time,minf(1.4,chosen.stream.get_length()*0.85))
+	chosen.pitch_scale = 1.0 if group in ["damage","signature"] else rng.randf_range(0.985,1.015)
+	chosen.volume_db = -6 if group == "damage" else (-11 if group == "signature" else -16+rng.randf_range(-1,1))
+	if kind in ["pickup","catch"]:
+		chosen.volume_db -= 5
 	chosen.set_meta("base_db",chosen.volume_db)
 	chosen.play()
 
@@ -170,10 +194,10 @@ func _process(delta):
 	banner_time = maxf(0,banner_time-delta)
 	banner.visible = banner_time > 0
 	banner.modulate.a = minf(1,banner_time*3)
-	music.volume_db = -32 if duck_time > 0 else -24
+	duck_gain = move_toward(duck_gain,1.0 if duck_time > 0 else 0.0,delta*(18.0 if duck_time > 0 else 2.5))
 	for group in ["launch","impact"]:
 		for voice in voices[group]:
-			voice.volume_db = float(voice.get_meta("base_db",-22.0)) - (8.0 if duck_time > 0 else 0.0)
+			voice.volume_db = float(voice.get_meta("base_db",-22.0)) - duck_gain*7.0
 	var p = get_parent().get_node("Player")
 	message.position = p.get_global_transform_with_canvas().origin + Vector2(-60,-100)
 	hurt_time = maxf(0,hurt_time-delta)
@@ -186,11 +210,7 @@ func _process(delta):
 	var stage := 0
 	if run:
 		stage = 2 if run.elapsed >= 420 else (1 if run.elapsed >= 180 else 0)
-	if stage != music_stage:
-		music_stage = stage
-		music.stream = sounds[stage]
-		music.play()
-	music.stream_paused = get_tree().paused or not get_tree().get_meta("music_on",true)
+	update_music(delta,stage)
 	if not get_tree().get_meta("sound_on",true):
 		for group in voices.values():
 			for voice in group:

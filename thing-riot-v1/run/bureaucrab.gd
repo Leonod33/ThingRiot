@@ -1,4 +1,5 @@
 extends "res://enemy.gd"
+const BODY_ART = preload("res://assets/midnight/enemies/bureaucrab.svg")
 var max_hp := 240
 var attack_timer := 2.5
 var attacks := 0
@@ -86,17 +87,7 @@ func _draw():
 		draw_circle(Vector2(side*80,-52-lift),22,Color("ddaa85"))
 		draw_rect(Rect2(Vector2(side*80-25,-45-lift),Vector2(50,17)),ink)
 		draw_rect(Rect2(Vector2(side*80-20,-44-lift),Vector2(40,9)),Color("fff0c5"))
-	draw_circle(Vector2.ZERO,56,ink)
-	draw_circle(Vector2(0,-5),49,Color.WHITE if flash_time > 0 else Color("737898"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-22,-34),Vector2(0,28),Vector2(22,-34)]),Color("fff0c5"))
-	draw_colored_polygon(PackedVector2Array([Vector2(0,-24),Vector2(-8,-10),Vector2(0,20),Vector2(8,-10)]),Color("d29c50"))
-	for x in [-18,18]:
-		draw_line(Vector2(x,-35),Vector2(x,-64),ink,7)
-		draw_circle(Vector2(x,-64),12,Color("fff0c5"))
-		draw_arc(Vector2(x,-64),12,0,TAU,20,ink,3)
-		draw_circle(Vector2(x,-64),4,ink)
-	draw_line(Vector2(-8,-64),Vector2(8,-64),ink,3)
-	draw_rect(Rect2(-26,31,52,12),Color("fff0c5"))
+	draw_texture_rect(BODY_ART,Rect2(-63,-92,126,151),false,Color(2.5,2.5,2.5) if flash_time > 0 else Color.WHITE)
 	super._draw()
 	if dead:
 		draw_set_transform(Vector2.ZERO)

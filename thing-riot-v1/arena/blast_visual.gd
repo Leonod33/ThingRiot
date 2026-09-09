@@ -8,12 +8,19 @@ func _ready():
 		queue_free()
 func _process(delta):
 	age += delta
-	if age > 0.35:
+	if age > 0.5:
 		queue_free()
 	queue_redraw()
 func _draw():
-	var r := radius * minf(1, age / 0.18)
-	draw_arc(Vector2.ZERO,r,0,TAU,64,Color(1,0.87,0.55,1-age/0.35),5)
+	var t := clampf(age/0.5,0,1)
+	var r := radius*(1-pow(1-t,4))
+	if t < 0.22:
+		draw_circle(Vector2.ZERO,r*0.5,Color(1,0.94,0.75,(1-t/0.22)*0.4))
+	draw_arc(Vector2.ZERO,r,0,TAU,64,Color(0.96,0.81,0.52,(1-t)*0.25),12*(1-t)+1,true)
+	draw_arc(Vector2.ZERO,r,0,TAU,64,Color(1,0.94,0.77,1-t),2.5,true)
 	for i in range(12):
-		var direction = Vector2.from_angle(i*TAU/12)
-		draw_line(direction*r*0.5,direction*r,Color(1,0.95,0.8,1-age/0.35),3)
+		var direction := Vector2.from_angle(i*2.39996)
+		var point := direction*r*(0.55+float(i%3)*0.11)+Vector2(0,t*t*30)
+		draw_set_transform(point,t*4+i)
+		draw_rect(Rect2(-4,-2,8,4),Color(0.82,0.65,0.4,1-t))
+		draw_line(Vector2(-4,-2),Vector2(4,-2),Color(1,0.9,0.66,1-t),1)

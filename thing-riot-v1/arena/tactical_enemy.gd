@@ -65,21 +65,4 @@ func _draw():
 			var normal = attack_direction.orthogonal() * 13 * offset
 			draw_line(normal, attack_direction*length+normal,colour,1)
 		draw_arc(Vector2.ZERO,23, -PI/2, -PI/2+TAU*(1-clock),32,Color.WHITE,3)
-	var tint := Color.WHITE if flash_time > 0 else Color("b7c9d5")
-	if kind == "charger":
-		draw_circle(Vector2(0,3),17,Color("272638"))
-		draw_circle(Vector2(0,1),14,tint)
-		draw_rect(Rect2(-12,-5,24,6),Color("272638"))
-		for x in [-7,7]:
-			draw_line(Vector2(x,-2),Vector2(x+3,-2),Color("ffe4a3"),2)
-		draw_colored_polygon(PackedVector2Array([Vector2(-7,-13),Vector2(0,-28),Vector2(7,-13)]),Color("f0c875"))
-		draw_line(Vector2(-16,11),Vector2(16,11),Color("796487"),5)
-	else:
-		draw_colored_polygon(PackedVector2Array([Vector2(-19,18),Vector2(0,-23),Vector2(19,18)]),Color("30283e"))
-		draw_colored_polygon(PackedVector2Array([Vector2(-13,14),Vector2(0,-18),Vector2(13,14)]),Color("74729d"))
-		draw_circle(Vector2(0,-1),8,Color("202135"))
-		for x in [-3,3]:
-			draw_circle(Vector2(x,-2),1.5,Color("fff2cd"))
-		draw_line(Vector2(17,18),Vector2(20,-13),Color("dec48b"),3)
-		draw_circle(Vector2(20,-16),4,Color("fff2cd"))
 	super._draw()

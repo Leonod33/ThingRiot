@@ -74,7 +74,10 @@ func run_tests():
 	await settle()
 	die.state = "ready"
 	crown.begin_return()
-	crown.global_position = die.global_position + Vector2(100,0)
+	# Start between the die and the enemy: isolate the seven-point blast from
+	# the separate, valid crown contact damage the old fixture also caused.
+	# The crown starts 48 px from the enemy, outside its 37 px swept radius.
+	crown.global_position = die.global_position + Vector2(32,0)
 	crown._physics_process(0.2)
 	die._physics_process(0.56)
 	check(die.pips == 6 and enemy.hp == hp-7,"crown cashes die into guaranteed six")
