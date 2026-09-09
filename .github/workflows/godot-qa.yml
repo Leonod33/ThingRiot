@@ -29,14 +29,16 @@ jobs:
           mkdir -p qa-output
           godot --headless --editor --path thing-riot-v1 --import 2>&1 | tee qa-output/import.log
           if grep -E 'SCRIPT ERROR|Parse Error|Failed to load script' qa-output/import.log; then exit 1; fi
+          failed=0
           for test in core_loop weapon arena collision_query run polish presentation; do
-            timeout 100 godot --headless --path thing-riot-v1 --script "res://tests/${test}_test.gd" 2>&1 | tee "qa-output/${test}.log"
-            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' "qa-output/${test}.log"; then exit 1; fi
+            if ! timeout 100 godot --headless --path thing-riot-v1 --script "res://tests/${test}_test.gd" 2>&1 | tee "qa-output/${test}.log"; then failed=1; fi
+            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' "qa-output/${test}.log"; then failed=1; fi
           done
           if test -f thing-riot-v1/tests/midnight_test.gd; then
-            timeout 100 godot --headless --path thing-riot-v1 --script res://tests/midnight_test.gd 2>&1 | tee qa-output/midnight.log
-            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' qa-output/midnight.log; then exit 1; fi
+            if ! timeout 100 godot --headless --path thing-riot-v1 --script res://tests/midnight_test.gd 2>&1 | tee qa-output/midnight.log; then failed=1; fi
+            if grep -E 'SCRIPT ERROR|Parse Error|ERROR:' qa-output/midnight.log; then failed=1; fi
           fi
+          exit "$failed"
       - name: Render visual fixtures
         if: always()
         run: |
