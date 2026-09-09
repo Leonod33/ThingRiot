@@ -1,0 +1,281 @@
+{
+  "music/royal_clockwork": {
+    "seconds": 68.5714,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.31,
+    "loop": true,
+    "loop_boundary_delta": 0.0038,
+    "integrated_lufs": -17.5,
+    "true_peak_dbfs": -2.7
+  },
+  "music/paperwork_pursuit": {
+    "seconds": 68.5714,
+    "source_peak_db": -2.85,
+    "source_rms_db": -18.95,
+    "loop": true,
+    "loop_boundary_delta": 0.001618,
+    "integrated_lufs": -17.1,
+    "true_peak_dbfs": -2.8
+  },
+  "music/the_final_audit": {
+    "seconds": 68.5714,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.72,
+    "loop": true,
+    "loop_boundary_delta": 0.002541,
+    "integrated_lufs": -15.9,
+    "true_peak_dbfs": -2.8
+  },
+  "sfx/crown_1": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.06,
+    "loop": false
+  },
+  "sfx/crown_2": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.29,
+    "loop": false
+  },
+  "sfx/crown_3": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.07,
+    "loop": false
+  },
+  "sfx/crown_hit_1": {
+    "seconds": 0.38,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.32,
+    "loop": false
+  },
+  "sfx/crown_hit_2": {
+    "seconds": 0.38,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.0,
+    "loop": false
+  },
+  "sfx/crown_hit_3": {
+    "seconds": 0.38,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.67,
+    "loop": false
+  },
+  "sfx/catch_1": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.3,
+    "loop": false
+  },
+  "sfx/catch_2": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.15,
+    "loop": false
+  },
+  "sfx/catch_3": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.19,
+    "loop": false
+  },
+  "sfx/biscuit_1": {
+    "seconds": 0.23,
+    "source_peak_db": -2.85,
+    "source_rms_db": -23.11,
+    "loop": false
+  },
+  "sfx/biscuit_2": {
+    "seconds": 0.23,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.47,
+    "loop": false
+  },
+  "sfx/biscuit_3": {
+    "seconds": 0.23,
+    "source_peak_db": -2.85,
+    "source_rms_db": -22.38,
+    "loop": false
+  },
+  "sfx/crunch_1": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.98,
+    "loop": false
+  },
+  "sfx/crunch_2": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.33,
+    "loop": false
+  },
+  "sfx/crunch_3": {
+    "seconds": 0.32,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.81,
+    "loop": false
+  },
+  "sfx/throw_die_1": {
+    "seconds": 0.22,
+    "source_peak_db": -2.85,
+    "source_rms_db": -22.08,
+    "loop": false
+  },
+  "sfx/throw_die_2": {
+    "seconds": 0.22,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.45,
+    "loop": false
+  },
+  "sfx/throw_die_3": {
+    "seconds": 0.22,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.17,
+    "loop": false
+  },
+  "sfx/clack_1": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.63,
+    "loop": false
+  },
+  "sfx/clack_2": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.08,
+    "loop": false
+  },
+  "sfx/clack_3": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.38,
+    "loop": false
+  },
+  "sfx/dice_1": {
+    "seconds": 0.6,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.56,
+    "loop": false
+  },
+  "sfx/dice_2": {
+    "seconds": 0.6,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.63,
+    "loop": false
+  },
+  "sfx/dice_3": {
+    "seconds": 0.6,
+    "source_peak_db": -2.85,
+    "source_rms_db": -19.15,
+    "loop": false
+  },
+  "sfx/stamp_1": {
+    "seconds": 0.65,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.04,
+    "loop": false
+  },
+  "sfx/stamp_2": {
+    "seconds": 0.65,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.98,
+    "loop": false
+  },
+  "sfx/stamp_3": {
+    "seconds": 0.65,
+    "source_peak_db": -2.85,
+    "source_rms_db": -20.69,
+    "loop": false
+  },
+  "sfx/hurt_1": {
+    "seconds": 0.34,
+    "source_peak_db": -2.85,
+    "source_rms_db": -16.57,
+    "loop": false
+  },
+  "sfx/bomb_1": {
+    "seconds": 0.8,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.26,
+    "loop": false
+  },
+  "sfx/bomb_2": {
+    "seconds": 0.8,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.56,
+    "loop": false
+  },
+  "sfx/bomb_3": {
+    "seconds": 0.8,
+    "source_peak_db": -2.85,
+    "source_rms_db": -21.23,
+    "loop": false
+  },
+  "sfx/spring_1": {
+    "seconds": 0.4,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.07,
+    "loop": false
+  },
+  "sfx/spring_2": {
+    "seconds": 0.4,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.07,
+    "loop": false
+  },
+  "sfx/spring_3": {
+    "seconds": 0.4,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.07,
+    "loop": false
+  },
+  "sfx/pickup_1": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.41,
+    "loop": false
+  },
+  "sfx/pickup_2": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.06,
+    "loop": false
+  },
+  "sfx/pickup_3": {
+    "seconds": 0.2,
+    "source_peak_db": -2.85,
+    "source_rms_db": -17.57,
+    "loop": false
+  },
+  "sfx/six": {
+    "seconds": 1.13,
+    "source_peak_db": -2.85,
+    "source_rms_db": -16.13,
+    "loop": false
+  },
+  "sfx/crumble": {
+    "seconds": 1.01,
+    "source_peak_db": -2.85,
+    "source_rms_db": -15.32,
+    "loop": false
+  },
+  "sfx/unlock": {
+    "seconds": 1.25,
+    "source_peak_db": -2.85,
+    "source_rms_db": -16.09,
+    "loop": false
+  },
+  "sfx/arrival": {
+    "seconds": 1.79,
+    "source_peak_db": -2.85,
+    "source_rms_db": -13.39,
+    "loop": false
+  },
+  "sfx/victory": {
+    "seconds": 1.61,
+    "source_peak_db": -2.85,
+    "source_rms_db": -16.11,
+    "loop": false
+  }
+}

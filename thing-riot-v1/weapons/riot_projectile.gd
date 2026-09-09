@@ -150,7 +150,7 @@ func burst():
 const CROWN_ART = preload("res://assets/midnight/weapons/crown.svg")
 const BISCUIT_ART = preload("res://assets/midnight/weapons/biscuit.svg")
 func _draw():
-	var warm := spec.kind == "biscuit"
+	var warm: bool = spec.kind == "biscuit"
 	var colour := Color("e2ba7d") if warm else (Color("99e5f0") if returning else Color("f1cf82"))
 	for i in range(1, trail.size()):
 		var strength := 1.0-float(i)/9.0

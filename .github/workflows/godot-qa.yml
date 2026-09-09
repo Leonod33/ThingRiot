@@ -25,6 +25,7 @@ jobs:
           sudo install /tmp/godot/Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
       - name: Import and regression tests
         run: |
+          set -o pipefail
           mkdir -p qa-output
           godot --headless --editor --path thing-riot-v1 --import 2>&1 | tee qa-output/import.log
           if grep -E 'SCRIPT ERROR|Parse Error|Failed to load script' qa-output/import.log; then exit 1; fi
@@ -39,6 +40,7 @@ jobs:
       - name: Render visual fixtures
         if: always()
         run: |
+          set -o pipefail
           mkdir -p qa-output
           fixture=run_visual
           if test -f thing-riot-v1/tests/midnight_visual.gd; then fixture=midnight_visual; fi

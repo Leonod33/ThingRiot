@@ -1,4 +1,7 @@
 extends Control
+const CROWN = preload("res://assets/midnight/weapons/crown.svg")
+const BISCUIT = preload("res://assets/midnight/weapons/biscuit.svg")
+const DIE = preload("res://assets/midnight/weapons/die.svg")
 var kind := "crown"
 var active := true
 func _ready():
@@ -9,17 +12,14 @@ func _draw():
 	draw_set_transform(size/2,0,Vector2.ONE)
 	match kind:
 		"crown":
-			draw_colored_polygon(PackedVector2Array([Vector2(-17,-10),Vector2(-8,-3),Vector2(0,-17),Vector2(8,-3),Vector2(17,-10),Vector2(13,12),Vector2(-13,12)]),tint)
-			draw_line(Vector2(-11,7),Vector2(11,7),Color("fff0c5") if active else tint,2)
+			draw_texture_rect(CROWN,Rect2(-21,-20,42,37),false,Color.WHITE if active else Color(0.4,0.47,0.55,0.65))
 		"biscuit":
-			draw_circle(Vector2.ZERO,16,tint)
-			for v in [Vector2(-6,-5),Vector2(7,-3),Vector2(1,7)]:
-				draw_circle(v,2.5,Color("443549"))
+			draw_texture_rect(BISCUIT,Rect2(-19,-21,38,41),false,Color.WHITE if active else Color(0.4,0.47,0.55,0.65))
 		"dice":
-			draw_style_box(preload("res://polish/royal_theme.gd").box(Color("fff0c5") if active else tint,Color("20283b")),Rect2(-18,-18,36,36))
+			draw_texture_rect(DIE,Rect2(-22,-22,44,43),false,Color.WHITE if active else Color(0.4,0.47,0.55,0.65))
 			for x in [-8,8]:
-				for y in [-9,0,9]:
-					draw_circle(Vector2(x,y),2.2,Color("20283b"))
+				for y in [-10,-2,6]:
+					draw_circle(Vector2(x,y),2,Color("20283b"))
 		_:
 			draw_colored_polygon(PackedVector2Array([Vector2(0,-17),Vector2(15,0),Vector2(0,17),Vector2(-15,0)]),tint)
 			draw_line(Vector2(-6,0),Vector2(6,0),Color("20283b"),3)

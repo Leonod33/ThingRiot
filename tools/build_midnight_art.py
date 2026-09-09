@@ -26,13 +26,18 @@ def svg(name, body, box, width=None, height=None):
     p.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="{width or w}" height="{height or h}" viewBox="{x} {y} {w} {h}">{DEFS}<g stroke-linejoin="round" stroke-linecap="round">{body}</g></svg>\n')
 
 def path(d, fill, stroke=INK, sw=2):
-    return f'<path d="{d}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+    return f'<path d="{d}" fill="{alpha_fill(fill)}" stroke="{stroke}" stroke-width="{sw}"/>'
+
+def alpha_fill(fill):
+    if fill.startswith('#') and len(fill)==9:
+        return fill[:7]+'" fill-opacity="'+str(round(int(fill[7:],16)/255,3))
+    return fill
 
 def ellipse(cx, cy, rx, ry, fill, stroke='none', sw=1):
-    return f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+    return f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="{alpha_fill(fill)}" stroke="{stroke}" stroke-width="{sw}"/>'
 
 def rect(x, y, w, h, fill, stroke='none', sw=1, r=0):
-    return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+    return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{alpha_fill(fill)}" stroke="{stroke}" stroke-width="{sw}"/>'
 
 def line(x1,y1,x2,y2,c,sw=1):
     return path(f'M{x1} {y1}L{x2} {y2}', 'none',c,sw)
