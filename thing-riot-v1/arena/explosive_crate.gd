@@ -43,12 +43,14 @@ func detonate():
 	get_tree().current_scene.add_child(fx)
 	fx.global_position = global_position
 	fx.radius = blast_radius
+	var feedback = get_tree().current_scene.get_node_or_null("Feedback")
+	if feedback:
+		feedback.sound("bomb")
 	queue_free()
 func _draw():
-	draw_rect(Rect2(-13,-13,26,26), Color("382936"))
-	draw_rect(Rect2(-11,-11,22,22), Color("d99b57"))
-	for y in [-8,8]:
-		draw_line(Vector2(-11,y),Vector2(11,y),Color("ffe0a0"),2)
+	draw_texture_rect(CRATE_ART,Rect2(-20,-20,40,40),false)
+	draw_rect(Rect2(-9,-11,18,24),Color("f1d08c"))
+	draw_line(Vector2(-8,-10),Vector2(8,-10),Color("795036"),1)
 	# A bomb silhouette, not colour alone, distinguishes explosive crates.
 	draw_circle(Vector2(0,2),6,Color("302335"))
 	draw_arc(Vector2(4,-4),4,PI,TAU,12,Color("fff0ca"),2)

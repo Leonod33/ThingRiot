@@ -9,6 +9,8 @@ var run: Node
 
 func _ready() -> void:
 	get_tree().paused = false
+	add_child(preload("res://arena/courtyard.gd").new())
+	add_child(preload("res://polish/atmosphere.gd").new())
 	run = preload("res://run/run_director.gd").new()
 	run.name = "RunDirector"
 	add_child(run)

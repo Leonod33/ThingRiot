@@ -147,24 +147,25 @@ func burst():
 	patch.global_position = global_position
 	queue_free()
 
+const CROWN_ART = preload("res://assets/midnight/weapons/crown.svg")
+const BISCUIT_ART = preload("res://assets/midnight/weapons/biscuit.svg")
 func _draw():
+	var warm := spec.kind == "biscuit"
+	var colour := Color("e2ba7d") if warm else (Color("99e5f0") if returning else Color("f1cf82"))
 	for i in range(1, trail.size()):
-		draw_line(to_local(trail[i - 1]), to_local(trail[i]), Color(Color("d4a363") if spec.kind == "biscuit" else Color("c5e5ed"), 0.3 * (1.0 - float(i) / 9)), 2.5)
-	if spec.kind == "biscuit":
+		var strength := 1.0-float(i)/9.0
+		draw_line(to_local(trail[i-1]),to_local(trail[i]),Color(colour,0.12*strength),9*strength,true)
+		draw_line(to_local(trail[i-1]),to_local(trail[i]),Color(colour,0.65*strength),2.6*strength,true)
+	if warm:
 		draw_set_transform(Vector2.ZERO,age*5)
-		draw_circle(Vector2(1,2),14,Color("765039"))
-		draw_circle(Vector2.ZERO, 13, Color("eab26b"))
-		draw_arc(Vector2.ZERO,10,PI,TAU*0.8,12,Color("ffe0a0"),1.5,true)
-		draw_arc(Vector2.ZERO, 13, 0, TAU, 20, Color("503321"), 2)
-		for point in [Vector2(-5,-4), Vector2(5,-3), Vector2(1,5)]:
-			draw_circle(point, 2, Color("503321"))
+		draw_texture_rect(BISCUIT_ART,Rect2(-17,-18,34,37),false)
 	else:
-		draw_set_transform(Vector2.ZERO, age * 12, Vector2.ONE * size_mult)
-		var points = PackedVector2Array([Vector2(-16,-10),Vector2(-7,-3),Vector2(0,-15),Vector2(7,-3),Vector2(16,-10),Vector2(12,12),Vector2(-12,12)])
-		draw_colored_polygon(points, Color("ffe090") if not returning else Color("a5ecff"))
-		points.append(points[0])
-		draw_polyline(points, Color("312c4a"), 2)
-		draw_line(Vector2(-9,7),Vector2(9,7),Color.WHITE,1.5,true)
+		draw_arc(Vector2.ZERO,19*size_mult,age*12,age*12+1.4,12,Color(colour,0.6),2,true)
+		draw_set_transform(Vector2.ZERO,age*12,Vector2.ONE*size_mult)
+		draw_texture_rect(CROWN_ART,Rect2(-20,-19,40,35),false)
+		# One crisp material glint, rotating with the object.
+		draw_line(Vector2(-11,-10),Vector2(-3,-10),Color("fffbe0"),1.5,true)
+		draw_line(Vector2(-7,-14),Vector2(-7,-6),Color("fffbe0"),1.5,true)
 
 func play_material(kind: String):
 	var feedback = get_tree().current_scene.get_node_or_null("Feedback")

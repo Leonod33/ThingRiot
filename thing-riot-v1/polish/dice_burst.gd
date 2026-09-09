@@ -17,7 +17,17 @@ func _process(delta):
 func _draw():
 	var t := clampf(age/0.7,0,1)
 	var tint = Color("ffe196") if royal else Color("a9e3ed")
-	draw_arc(Vector2.ZERO,radius*minf(1,t*3),0,TAU,48,Color(tint,1-t),4)
+	var r := radius*(1-pow(1-t,4))
+	draw_arc(Vector2.ZERO,r,0,TAU,64,Color(tint,(1-t)*0.2),12*(1-t)+1,true)
+	draw_arc(Vector2.ZERO,r,0,TAU,64,Color(tint,1-t),2.5,true)
+	if royal:
+		for i in range(6):
+			var angle := i*TAU/6
+			var point := Vector2.from_angle(angle)*r*0.65
+			draw_set_transform(point,angle+t)
+			var diamond := PackedVector2Array([Vector2(0,-7),Vector2(4,0),Vector2(0,7),Vector2(-4,0)])
+			draw_colored_polygon(diamond,Color(tint,1-t))
+		draw_set_transform(Vector2.ZERO)
 	for i in range(pips*3):
 		var dir = Vector2.from_angle(TAU*i/(pips*3))
 		draw_line(dir*radius*t,dir*(radius*t+10),Color(tint,1-t),3)

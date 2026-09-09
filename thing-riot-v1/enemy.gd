@@ -10,10 +10,15 @@ var dead := false
 var crumb_time := 0.0
 var flash_time := 0.0
 var knockback_velocity := Vector2.ZERO
+var artwork: Sprite2D
 
 func _ready():
 	z_index = 1
 	$Sprite2D.hide()
+	if not is_in_group("boss") and get_script().resource_path != "res://run/bureaucrab.gd":
+		artwork = preload("res://characters/enemy_visual.gd").new()
+		artwork.name = "EnemyVisual"
+		add_child(artwork)
 		# Find player node once at start (adjust path if needed)
 	add_to_group("enemies")
 	player = get_node("/root/Main/Player")
@@ -37,6 +42,8 @@ func _physics_process(delta):
 	crumb_time = maxf(0.0, crumb_time - delta)
 	flash_time = maxf(0.0, flash_time - delta)
 	if was_flashing != (flash_time > 0):
+		if is_instance_valid(artwork):
+			artwork.flash(flash_time > 0)
 		$Sprite2D.modulate = Color(3,3,3) if flash_time > 0 else Color.WHITE
 		queue_redraw()
 	if was_coated != (crumb_time > 0):
@@ -54,11 +61,17 @@ func take_damage(amount):
 	if dead or amount <= 0:
 		return
 	flash_time = 0.08
+	if is_instance_valid(artwork):
+		artwork.flash(true)
 	$Sprite2D.modulate = Color(3,3,3)
 	queue_redraw()
 	hp -= amount
 	if hp <= 0:
 		dead = true
+		var debris = preload("res://weapons/impact.gd").new()
+		debris.kind = "paper"
+		get_tree().current_scene.add_child(debris)
+		debris.global_position = global_position
 		var run = get_tree().current_scene.get_node_or_null("RunDirector")
 		if run:
 			run.kills += 1
@@ -82,7 +95,7 @@ func _on_damage_area_body_entered(body):
 		global_position += push_dir * 20
 
 func _draw():
-	if basic_art:
+	if basic_art and not is_instance_valid(artwork):
 		draw_set_transform(Vector2(0,10),0,Vector2(1,0.3))
 		draw_circle(Vector2.ZERO,15,Color(0.03,0.04,0.08,0.35))
 		draw_set_transform(Vector2.ZERO)

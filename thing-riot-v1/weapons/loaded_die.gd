@@ -1,4 +1,5 @@
 extends Node2D
+const DIE_ART = preload("res://assets/midnight/weapons/die.svg")
 var spec: Resource
 var owner_player: Node2D
 var controller: Node2D
@@ -107,10 +108,7 @@ func _draw():
 	draw_circle(Vector2(0,9),20,Color(0.08,0.09,0.16,0.35))
 	var lift = -absf(sin(age*12))*12*(1-clampf(travelled/spec.reach,0,1)) if state == "rolling" else -2.0
 	draw_set_transform(Vector2(0,lift),spin,Vector2.ONE*(1.25 if royal else 1.0))
-	draw_rect(Rect2(-20,-17,40,39),Color("25273e"))
-	draw_rect(Rect2(-17,13,34,7),Color("b5a68e"))
-	draw_rect(Rect2(-17,-17,34,34),Color("ffe196") if royal else Color("fff3dc"))
-	draw_line(Vector2(-16,-16),Vector2(16,-16),Color.WHITE,2)
+	draw_texture_rect(DIE_ART,Rect2(-24,-22,48,47),false,Color("ffe7a5") if royal else Color.WHITE)
 	var dots = [Vector2(-8,-8),Vector2(8,8),Vector2(-8,8),Vector2(8,-8),Vector2(-8,0),Vector2(8,0)]
 	if pips%2 == 1:
 		draw_circle(Vector2.ZERO,2.8,Color("30243d"))
