@@ -36,6 +36,21 @@ Regenerate SVG sources with `python tools/build_midnight_art.py` (standard libra
 
 ## Validation status
 
-Engine import and the new rendered fixtures have succeeded. The final eight-suite regression gate and same-runner performance comparison are being completed on PR #17; final results will be recorded here before delivery.
+Verified on commit `52b032e`, [GitHub Actions run 34379040591](https://github.com/Leonod33/ThingRiot/actions/runs/34379040591): Godot 4.3 import succeeded; **185 checks passed with zero failures** (34 core, 16 weapons, 19 arena, 9 collision, 34 run, 26 polish, 15 presentation, 32 Midnight Audit). All six visual fixtures rendered without script errors: opening, combat, dice faces, crowd damage, boss warnings and upgrade cards.
+
+The same-runner software-OpenGL comparison retained 180 enemies, 3 hostile bolts and 40 royal projectiles in both builds:
+
+| Metric | Previous presentation build | Midnight Audit |
+| --- | ---: | ---: |
+| Median wall frame | 106.737 ms | 72.659 ms |
+| p95 wall frame | 121.715 ms | 89.063 ms |
+| Median script tick | 3.199 ms | 3.669 ms |
+| p95 script tick | 4.320 ms | 4.894 ms |
+
+Median wall frame time improved about 32%, with a small increase in script cost from added animation. This is a fixed-workload comparison using llvmpipe software rendering, not an expected frame rate on a hardware GPU. The benchmark preserves production behaviour and uses durable enemies only in its isolated fixture.
+
+![Verified combat render](midnight-combat.png)
+
+![Verified Bureaucrab render](midnight-boss.png)
 
 Human listening on the user's speakers/headphones, physical controller feel and a full eight-minute balance playthrough remain useful final taste/feel checks. No gameplay balance was intentionally changed in this pass.
